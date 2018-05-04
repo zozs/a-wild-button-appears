@@ -1,0 +1,30 @@
+{
+  "name": "a-wild-button-appears",
+  "version": "1.0.0",
+  "description": "A wild BUTTON appears - a useless bot for Slack.",
+  "main": "wildbutton.js",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.2",
+    "dotenv": "^5.0.1",
+    "express": "^4.16.3",
+    "lodash.random": "^3.2.0",
+    "node-schedule": "^1.3.0"
+  },
+  "devDependencies": {
+    "standard": "^11.0.0"
+  },
+  "scripts": {
+    "test": "standard"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zozs/a-wild-button-appears.git"
+  },
+  "author": "Linus Karlsson <linus.karlsson@eit.lth.se>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zozs/a-wild-button-appears/issues"
+  },
+  "homepage": "https://github.com/zozs/a-wild-button-appears#readme"
+}
