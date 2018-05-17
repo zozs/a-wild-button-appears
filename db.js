@@ -24,8 +24,8 @@ let data = parseJSON()
 
 module.exports = {
   isClicked: (uuid) => data.clicks.hasOwnProperty(uuid),
-  setClicked: async (uuid, user) => {
-    data.clicks[uuid] = user
+  setClicked: async (uuid, user, clickTime) => {
+    data.clicks[uuid] = { user: user, clickTime: clickTime }
     await saveJSON(data)
   }
 }
