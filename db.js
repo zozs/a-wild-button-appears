@@ -25,7 +25,7 @@ let data = parseJSON()
 // Data manipulation functions below.
 function clicksPerUser () {
   let clicks = {}
-  Object.entries(data).forEach(([uuid, clickData]) => {
+  Object.entries(data.clicks).forEach(([uuid, clickData]) => {
     let user = ''
     if (typeof clickData === 'string') {
       // Old-style format, only user, no time.
@@ -49,7 +49,7 @@ function clicksPerUser () {
 }
 
 function topClickTimes (n) {
-  let clickTimes = Object.entries(data)
+  let clickTimes = Object.entries(data.clicks)
     .filter(([start, clickData]) => typeof clickData !== 'string')
     .map(([start, clickData]) => ({
       user: clickData.user,
