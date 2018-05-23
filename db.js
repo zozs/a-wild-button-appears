@@ -55,7 +55,7 @@ function topClickTimes (n) {
       user: clickData.user,
       time: Date.parse(clickData.clickTime) - Date.parse(start)
     }))
-  clickTimes.sort((a, b) => b.time - a.time)
+  clickTimes.sort((a, b) => a.time - b.time)
   return clickTimes.slice(0, n)
 }
 

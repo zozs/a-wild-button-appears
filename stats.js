@@ -7,7 +7,7 @@ module.exports = async (res) => {
   const clickTimes = db.topClickTimes(5)
 
   const countAttachment = {
-    title: 'List of winners!',
+    title: 'Number of wins!',
     text: wins.map(u => `${u.count} <@${u.user}>`).join('\n'),
     color: '#74c874'
   }
