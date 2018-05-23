@@ -22,10 +22,49 @@ async function saveJSON (dataObj) {
 // Parse the data once on startup, then save when changes are made.
 let data = parseJSON()
 
+// Data manipulation functions below.
+function clicksPerUser () {
+  let clicks = {}
+  Object.entries(data).forEach(([uuid, clickData]) => {
+    let user = ''
+    if (typeof clickData === 'string') {
+      // Old-style format, only user, no time.
+      user = clickData
+    } else {
+      // New-style format, where both user and click-time is recorded.
+      user = clickData.user
+    }
+
+    if (!clicks.hasOwnProperty(user)) {
+      clicks[user] = 0
+    }
+    clicks[user]++
+  })
+
+  // Now return sorted as a list.
+  let sorted = []
+  Object.entries(clicks).forEach(([user, count]) => sorted.push({user: user, count: count}))
+  sorted.sort((a, b) => b.count - a.count)
+  return sorted
+}
+
+function topClickTimes (n) {
+  let clickTimes = Object.entries(data)
+    .filter(([start, clickData]) => typeof clickData !== 'string')
+    .map(([start, clickData]) => ({
+      user: clickData.user,
+      time: Date.parse(clickData.clickTime) - Date.parse(start)
+    }))
+  clickTimes.sort((a, b) => b.time - a.time)
+  return clickTimes.slice(0, n)
+}
+
 module.exports = {
   isClicked: (uuid) => data.clicks.hasOwnProperty(uuid),
   setClicked: async (uuid, user, clickTime) => {
     data.clicks[uuid] = { user: user, clickTime: clickTime }
     await saveJSON(data)
-  }
+  },
+  allClicks: () => clicksPerUser(),
+  topClickTimes: (n) => topClickTimes(n)
 }

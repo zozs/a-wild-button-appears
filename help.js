@@ -4,12 +4,8 @@ module.exports = async (res) => {
     attachments: [
       {
         title: 'Commands',
-        text: 'Perhaps in the future.'
+        text: '`/wildbutton stats`: some wild STATISTICS appears!'
       }
-      // {
-      //   title: 'Commands',
-      //   text: '`/wildbutton stats`: return the number of words in the database.'
-      // }
     ]
   }
 

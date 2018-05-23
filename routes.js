@@ -1,7 +1,7 @@
 const announceCommand = require('./announce')
 const clickHandler = require('./click')
 const helpCommand = require('./help')
-// const statsCommand = require('./stats')
+const statsCommand = require('./stats')
 const usageCommand = require('./usage')
 
 module.exports = (app) => {
@@ -24,8 +24,7 @@ module.exports = (app) => {
           res.send('')
           await announceCommand(new Date().toISOString())
         } else if (body.text === 'stats') {
-          res.send('')
-          // await statsCommand(res)
+          await statsCommand(res)
         } else if (body.text === 'help') {
           await helpCommand(res)
         } else {
