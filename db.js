@@ -65,6 +65,6 @@ module.exports = {
     data.clicks[uuid] = { user: user, clickTime: clickTime }
     await saveJSON(data)
   },
-  allClicks: () => clicksPerUser(),
+  clicksPerUser: () => clicksPerUser(),
   topClickTimes: (n) => topClickTimes(n)
 }
