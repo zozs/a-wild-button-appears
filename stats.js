@@ -8,19 +8,19 @@ module.exports = async (res) => {
   const recentTimes = db.recentClickTimes(5)
 
   const countAttachment = {
-    title: 'Number of wins!',
+    title: 'Number of wins',
     text: wins.map(u => `${u.count} <@${u.user}>`).join('\n'),
     color: '#74c874'
   }
 
   const topAttachment = {
-    title: 'Top 5 fastest click times!',
+    title: 'Fastest clicks',
     text: clickTimes.map(u => `${u.time} ms <@${u.user}>`).join('\n'),
     color: '#ed7474'
   }
 
   const recentAttachment = {
-    title: 'Last 5 click times',
+    title: 'Most recent clicks',
     text: recentTimes.map(u => `${u.date.substring(0, 10)} ${u.time} ms <@${u.user}>`).join('\n'),
     color: '#74c8ed'
   }
