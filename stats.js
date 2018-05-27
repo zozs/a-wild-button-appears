@@ -5,6 +5,7 @@ module.exports = async (res) => {
 
   const wins = db.clicksPerUser()
   const clickTimes = db.topClickTimes(5)
+  const recentTimes = db.recentClickTimes(5)
 
   const countAttachment = {
     title: 'Number of wins!',
@@ -18,11 +19,17 @@ module.exports = async (res) => {
     color: '#ed7474'
   }
 
+  const recentAttachment = {
+    title: 'Last 5 click times',
+    text: recentTimes.map(u => `${u.date.substring(0, 10)} ${u.time} ms <@${u.user}>`).join('\n'),
+    color: '#74c8ed'
+  }
+
   const statsMessage = {
     token: process.env.SLACK_ACCESS_TOKEN,
     as_user: false,
     text: '*Some wild STATISTICS appears!*',
-    attachments: [countAttachment, topAttachment]
+    attachments: [countAttachment, topAttachment, recentAttachment]
   }
   res.send(statsMessage)
   console.debug('Returned stats.')

@@ -48,6 +48,18 @@ function clicksPerUser () {
   return sorted
 }
 
+function recentClickTimes (n) {
+  let clickTimes = Object.entries(data.clicks)
+    .filter(([start, clickData]) => typeof clickData !== 'string')
+    .map(([start, clickData]) => ({
+      user: clickData.user,
+      time: Date.parse(clickData.clickTime) - Date.parse(start),
+      date: start
+    }))
+  clickTimes.sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
+  return clickTimes.slice(0, n)
+}
+
 function topClickTimes (n) {
   let clickTimes = Object.entries(data.clicks)
     .filter(([start, clickData]) => typeof clickData !== 'string')
@@ -66,5 +78,6 @@ module.exports = {
     await saveJSON(data)
   },
   clicksPerUser: () => clicksPerUser(),
+  recentClickTimes: (n) => recentClickTimes(n),
   topClickTimes: (n) => topClickTimes(n)
 }
