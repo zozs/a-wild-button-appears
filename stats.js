@@ -1,5 +1,7 @@
 const db = require('./db')
 
+const msToSec = ms => (ms / 1000).toFixed(2)
+
 module.exports = async (res) => {
   console.debug('Returning stats.')
 
@@ -15,13 +17,13 @@ module.exports = async (res) => {
 
   const topAttachment = {
     title: 'Fastest clicks',
-    text: clickTimes.map(u => `${u.time} ms <@${u.user}>`).join('\n'),
+    text: clickTimes.map(u => `${msToSec(u.time)} s <@${u.user}>`).join('\n'),
     color: '#ed7474'
   }
 
   const recentAttachment = {
     title: 'Most recent clicks',
-    text: recentTimes.map(u => `${u.date.substring(0, 10)} ${u.time} ms <@${u.user}>`).join('\n'),
+    text: recentTimes.map(u => `${u.date.substring(0, 10)}: ${msToSec(u.time)} s <@${u.user}>`).join('\n'),
     color: '#74c8ed'
   }
 
