@@ -48,27 +48,32 @@ function clicksPerUser () {
   return sorted
 }
 
-function recentClickTimes (n) {
-  let clickTimes = Object.entries(data.clicks)
+function clickTimes () {
+  return Object.entries(data.clicks)
     .filter(([start, clickData]) => typeof clickData !== 'string')
     .map(([start, clickData]) => ({
       user: clickData.user,
       time: Date.parse(clickData.clickTime) - Date.parse(start),
       date: start
     }))
-  clickTimes.sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
-  return clickTimes.slice(0, n)
 }
 
-function topClickTimes (n) {
-  let clickTimes = Object.entries(data.clicks)
-    .filter(([start, clickData]) => typeof clickData !== 'string')
-    .map(([start, clickData]) => ({
-      user: clickData.user,
-      time: Date.parse(clickData.clickTime) - Date.parse(start)
-    }))
-  clickTimes.sort((a, b) => a.time - b.time)
-  return clickTimes.slice(0, n)
+function recentClickTimes (n) {
+  const times = clickTimes()
+  times.sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
+  return times.slice(0, n)
+}
+
+function fastestClickTimes (n) {
+  const times = clickTimes()
+  times.sort((a, b) => a.time - b.time)
+  return times.slice(0, n)
+}
+
+function slowestClickTimes (n) {
+  const times = clickTimes()
+  times.sort((a, b) => b.time - a.time)
+  return times.slice(0, n)
 }
 
 module.exports = {
@@ -79,5 +84,6 @@ module.exports = {
   },
   clicksPerUser: () => clicksPerUser(),
   recentClickTimes: (n) => recentClickTimes(n),
-  topClickTimes: (n) => topClickTimes(n)
+  slowestClickTimes: (n) => slowestClickTimes(n),
+  fastestClickTimes: (n) => fastestClickTimes(n)
 }

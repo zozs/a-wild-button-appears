@@ -6,7 +6,8 @@ module.exports = async (res) => {
   console.debug('Returning stats.')
 
   const wins = db.clicksPerUser()
-  const clickTimes = db.topClickTimes(5)
+  const fastestClickTimes = db.fastestClickTimes(5)
+  const slowestClickTimes = db.slowestClickTimes(5)
   const recentTimes = db.recentClickTimes(5)
 
   const countAttachment = {
@@ -15,10 +16,16 @@ module.exports = async (res) => {
     color: '#74c874'
   }
 
-  const topAttachment = {
+  const fastestAttachment = {
     title: 'Fastest clicks',
-    text: clickTimes.map(u => `${msToSec(u.time)} s <@${u.user}>`).join('\n'),
+    text: fastestClickTimes.map(u => `${msToSec(u.time)} s <@${u.user}>`).join('\n'),
     color: '#ed7474'
+  }
+
+  const slowestAttachment = {
+    title: 'Slowest clicks',
+    text: slowestClickTimes.map(u => `${msToSec(u.time)} s <@${u.user}>`).join('\n'),
+    color: '#eded46'
   }
 
   const recentAttachment = {
@@ -31,7 +38,7 @@ module.exports = async (res) => {
     token: process.env.SLACK_ACCESS_TOKEN,
     as_user: false,
     text: '*Some wild STATISTICS appears!*',
-    attachments: [countAttachment, topAttachment, recentAttachment]
+    attachments: [countAttachment, fastestAttachment, slowestAttachment, recentAttachment]
   }
   res.send(statsMessage)
   console.debug('Returned stats.')
