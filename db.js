@@ -79,8 +79,14 @@ function slowestClickTimes (n) {
 module.exports = {
   isClicked: (uuid) => data.clicks.hasOwnProperty(uuid),
   setClicked: async (uuid, user, clickTime) => {
-    data.clicks[uuid] = { user: user, clickTime: clickTime }
+    data.clicks[uuid] = { user, clickTime, runnersUp: [] }
     await saveJSON(data)
+    return data.clicks[uuid]
+  },
+  addRunnerUp: async (uuid, user, clickTime) => {
+    data.clicks[uuid].runnersUp.push({ user, clickTime })
+    await saveJSON(data)
+    return data.clicks[uuid]
   },
   clicksPerUser: () => clicksPerUser(),
   recentClickTimes: (n) => recentClickTimes(n),

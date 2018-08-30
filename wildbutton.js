@@ -1,5 +1,4 @@
 require('dotenv').config()
-const bodyParser = require('body-parser')
 const express = require('express')
 const mountAnnounces = require('./announces')
 const mountRoutes = require('./routes')
@@ -16,8 +15,8 @@ const app = express()
  * DATA: path to json-file where statistics are stored.
  */
 
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(bodyParser.json())
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
 
 mountRoutes(app)
 mountAnnounces()

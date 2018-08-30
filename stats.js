@@ -17,13 +17,13 @@ module.exports = async (res) => {
   }
 
   const fastestAttachment = {
-    title: 'Fastest clicks',
+    title: 'Fastest wins',
     text: fastestClickTimes.map(u => `${msToSec(u.time)} s <@${u.user}>`).join('\n'),
     color: '#ed7474'
   }
 
   const slowestAttachment = {
-    title: 'Slowest clicks',
+    title: 'Slowest wins',
     text: slowestClickTimes.map(u => `${msToSec(u.time)} s <@${u.user}>`).join('\n'),
     color: '#eded46'
   }

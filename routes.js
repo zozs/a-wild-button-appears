@@ -20,7 +20,7 @@ module.exports = (app) => {
       // and trigger ID
       console.debug('Got slash command with text:', body.text)
       try {
-        if (body.text === 'announce') {
+        if (body.text === 'announce' && process.env.ALLOW_MANUAL_ANNOUNCE === 'yes') {
           res.send('')
           await announceCommand(new Date().toISOString())
         } else if (body.text === 'stats') {
