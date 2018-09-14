@@ -8,15 +8,13 @@ const app = express()
 /*
  * Environmental variables required:
  *
+ * ALLOW_MANUAL_ANNOUNCE: Set to 'yes' to allow manual announcement of button.
  * SLACK_ACCESS_TOKEN: The app token
- * SLACK_VERIFICATION_TOKEN: Token to verify that the requests comes from Slack
+ * SLACK_SIGNING_SECRET: The secret used to verify that requests come from Slack
  * PORT: Port for HTTP server to listen on
  * ANNOUNCE_CHANNEL: Channel ID (e.g. C12345678) in which to post the button.
  * DATA: path to json-file where statistics are stored.
  */
-
-app.use(express.urlencoded({ extended: true }))
-app.use(express.json())
 
 mountRoutes(app)
 mountAnnounces()
