@@ -56,8 +56,9 @@ A wild BUTTON appears needs some environmental variables configured. You can eit
 environmental variables in your shell, or put them in a `.env` file in the same folder as
 `wildbutton.js`.
 
+ * `ALLOW_MANUAL_ANNOUNCE`: Set to `yes` to allow manual announcement of button (good for testing)
  * `SLACK_ACCESS_TOKEN`: The app token
- * `SLACK_VERIFICATION_TOKEN`: Token to verify that the requests comes from Slack
+ * `SLACK_SIGNING_SECRET`: Signing secret to verify that the requests comes from Slack
  * `PORT`: Port for HTTP server to listen on
  * `ANNOUNCE_CHANNEL`: Channel ID (e.g. C12345678) in which to post the button.
  * `DATA`: path to json-file where statistics are stored.
