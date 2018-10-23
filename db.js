@@ -88,6 +88,7 @@ module.exports = {
     await saveJSON(data)
     return data.clicks[uuid]
   },
+  clickForUuid: (uuid) => data.clicks[uuid],
   clicksPerUser: () => clicksPerUser(),
   recentClickTimes: (n) => recentClickTimes(n),
   slowestClickTimes: (n) => slowestClickTimes(n),
