@@ -43,7 +43,7 @@ function clicksPerUser () {
 
   // Now return sorted as a list.
   let sorted = []
-  Object.entries(clicks).forEach(([user, count]) => sorted.push({user: user, count: count}))
+  Object.entries(clicks).forEach(([user, count]) => sorted.push({ user: user, count: count }))
   sorted.sort((a, b) => b.count - a.count)
   return sorted
 }

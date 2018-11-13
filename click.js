@@ -29,7 +29,7 @@ function wonMessageFormatter (uuid, click) {
   const attachments = [
     {
       text: `:heavy_check_mark: <@${click.user}> won (${winnerClickTime} s)!`,
-      ...(click.runnersUp.length > 0 && {footer: runnersUpTexts.join(', ') + ' was close!'})
+      ...(click.runnersUp.length > 0 && { footer: runnersUpTexts.join(', ') + ' was close!' })
     }
   ]
   const wonMessage = {

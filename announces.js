@@ -5,7 +5,7 @@ const _ = require('lodash')
 module.exports = async () => {
   // Schedule one job that launches 00:00:01 every day, and which
   // randomly selects the next invocation during that day.
-  schedule.scheduleJob({hour: 0, minute: 0, second: 1, dayOfWeek: new schedule.Range(1, 5)}, randomScheduleToday)
+  schedule.scheduleJob({ hour: 0, minute: 0, second: 1, dayOfWeek: new schedule.Range(1, 5) }, randomScheduleToday)
 }
 
 async function randomScheduleToday () {
