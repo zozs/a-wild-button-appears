@@ -56,12 +56,20 @@ A wild BUTTON appears needs some environmental variables configured. You can eit
 environmental variables in your shell, or put them in a `.env` file in the same folder as
 `wildbutton.js`.
 
+ * `PORT`: Port for HTTP server to listen on
+ * PostgreSQL environmental variables to connect to the database. See https://www.postgresql.org/docs/9.1/libpq-envars.html for possible variables.
+   * Examples:
+   * `PGHOST`: PostgreSQL hostname
+   * `PGUSER`: PostgreSQL username
+   * `PGPASSWORD`: PostgreSQL password
+   * `PGDATABASE`: PostgreSQL database
+
+The following information is also required.
+
  * `ALLOW_MANUAL_ANNOUNCE`: Set to `yes` to allow manual announcement of button (good for testing)
  * `SLACK_ACCESS_TOKEN`: The app token
  * `SLACK_SIGNING_SECRET`: Signing secret to verify that the requests comes from Slack
- * `PORT`: Port for HTTP server to listen on
  * `ANNOUNCE_CHANNEL`: Channel ID (e.g. C12345678) in which to post the button.
- * `DATA`: path to json-file where statistics are stored.
 
 ### Running
 

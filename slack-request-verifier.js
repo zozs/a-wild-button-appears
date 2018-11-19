@@ -1,39 +1,35 @@
 const crypto = require('crypto')
-const express = require('express')
-
-function slackVerifyBuf (signingSecret) {
-  return (req, res, buf, encoding) => {
-    const body = buf.toString(encoding || 'utf8')
-    const requestSignature = req.get('X-Slack-Signature')
-    const requestTimestamp = req.get('X-Slack-Request-Timestamp')
-
-    if (requestSignature === undefined || requestTimestamp === undefined) {
-      console.error('No signature or timestamp header on request!')
-      throw new Error('Request is missing Slack signature and/or timestamp header.')
-    }
-
-    const fiveMinutesAgo = Math.floor(Date.now() / 1000) - (60 * 5)
-    if (requestTimestamp < fiveMinutesAgo) {
-      console.error('Request is older than 5 minutes.')
-      throw new Error('Slack request signing verification failed')
-    }
-
-    const hmac = crypto.createHmac('sha256', signingSecret)
-    const [version, hash] = requestSignature.split('=')
-    hmac.update(`${version}:${requestTimestamp}:${body}`)
-
-    if (hash !== hmac.digest('hex')) {
-      console.error('Invalid signature on request!')
-      throw new Error('Slack request signing verification failed')
-    }
-  }
-}
+const createError = require('http-errors')
+const db = require('./db')
 
 module.exports = {
-  slackVerifyJson (signingSecret, opts) {
-    return express.json({ ...opts, verify: slackVerifyBuf(signingSecret) })
-  },
-  slackVerifyUrlencoded (signingSecret, opts) {
-    return express.urlencoded({ ...opts, verify: slackVerifyBuf(signingSecret) })
+  slackVerify: (req, res, next) => {
+    if (req.slack === undefined) {
+      console.error('No slack object on request! Missing slack-request-extract middleware?')
+      return next(createError(403, 'Request is missing Slack object on request object.'))
+    }
+
+    const { version, requestTimestamp, body, hash } = req.slack
+    const team = req.body.team.id || req.body.team
+    if (team === undefined) {
+      console.error('No Slack team in request object!')
+      return next(createError(400, 'Request object is missing Slack team.'))
+    }
+    req.slack.team = team
+
+    db.signingSecret(team)
+      .then(signingSecret => {
+        const hmac = crypto.createHmac('sha256', signingSecret)
+        hmac.update(`${version}:${requestTimestamp}:${body}`)
+
+        if (hash !== hmac.digest('hex')) {
+          console.error('Invalid signature on request!')
+          return next(createError(403, 'Slack request signing verification failed'))
+        }
+        next()
+      })
+      .catch(e => {
+        next(createError(400, 'No such team-id in database. Request cannot be verified!'))
+      })
   }
 }

@@ -1,3 +1,15 @@
+const { Pool } = require('pg')
+
+const pool = new Pool()
+
+async function signingSecret (team) {
+  const { rows } = await pool.query('SELECT signing_secret FROM instances WHERE team = $1', [team])
+  if (rows[0] === undefined) {
+    throw new Error('No such team in database!')
+  }
+  return rows[0].signing_secret
+}
+
 const fs = require('fs')
 const { promisify } = require('util')
 
@@ -77,6 +89,7 @@ function slowestClickTimes (n) {
 }
 
 module.exports = {
+  dbReady: async () => pool.query('SELECT NOW()'), // will throw on connection error.
   isClicked: (uuid) => data.clicks.hasOwnProperty(uuid),
   setClicked: async (uuid, user, clickTime) => {
     data.clicks[uuid] = { user, clickTime, runnersUp: [] }
@@ -92,5 +105,6 @@ module.exports = {
   clicksPerUser: () => clicksPerUser(),
   recentClickTimes: (n) => recentClickTimes(n),
   slowestClickTimes: (n) => slowestClickTimes(n),
-  fastestClickTimes: (n) => fastestClickTimes(n)
+  fastestClickTimes: (n) => fastestClickTimes(n),
+  signingSecret
 }

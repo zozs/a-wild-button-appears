@@ -8,9 +8,16 @@ This is the suggested design for a database schema for a-wild-button-appears.
 CREATE TABLE IF NOT EXISTS instances (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
-  token TEXT NOT NULL,
+  access_token TEXT NOT NULL,
   signing_secret TEXT NOT NULL,
-  channel TEXT NOT NULL
+  team TEXT NOT NULL UNIQUE,
+  channel TEXT NOT NULL,
+  manual_announce BOOLEAN NOT NULL DEFAULT FALSE,
+  weekdays SMALLINT NOT NULL CONSTRAINT valid_weekdays CHECK (weekdays >= 0 AND weekdays < 128),
+  interval_start INTEGER NOT NULL,
+  interval_end INTEGER NOT NULL,
+  CONSTRAINT valid_interval CHECK (interval_end > interval_start AND
+    interval_start > 0 AND interval_end < 1440)
 );
 ```
 
