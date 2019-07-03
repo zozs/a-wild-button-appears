@@ -92,5 +92,6 @@ module.exports = {
   clicksPerUser: () => clicksPerUser(),
   recentClickTimes: (n) => recentClickTimes(n),
   slowestClickTimes: (n) => slowestClickTimes(n),
-  fastestClickTimes: (n) => fastestClickTimes(n)
+  fastestClickTimes: (n) => fastestClickTimes(n),
+  totalClicks: () => Object.keys(data.clicks).length
 }

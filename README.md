@@ -72,7 +72,7 @@ Just launch the `wildbutton.js` file with Node.
 A wild BUTTON appears is licensed under the ISC license, see the `LICENSE` file, or the text below:
 
 ```
-Copyright (c) 2018, Linus Karlsson
+Copyright (c) 2018, 2019, Linus Karlsson
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above

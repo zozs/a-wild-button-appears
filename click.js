@@ -1,5 +1,8 @@
 const db = require('./db')
 
+const axios = require('axios')
+const qs = require('querystring')
+
 function diffTime (uuid, time) {
   return (Date.parse(time) - Date.parse(uuid)) / 1000
 }
@@ -51,6 +54,22 @@ module.exports = async (res, body) => {
       const clickData = await db.setClicked(uuid, user, now)
       res.send(wonMessageFormatter(uuid, clickData))
       console.debug(`${now}: ${user}: Recorded successful click!`)
+
+      // Check if it is a special click!
+      if (db.totalClicks() % 100 == 0) {
+        const attachments = [{
+          text: `You are the winner of the ${db.totalClicks()}th button!`,
+          color: '#74c8ed'
+        }]
+        const anniversaryMessage = {
+          token: process.env.SLACK_ACCESS_TOKEN,
+          as_user: false,
+          text: '*:tada: Congratulations! :confetti_ball:*',
+          attachments: JSON.stringify(attachments),
+          channel: process.env.ANNOUNCE_CHANNEL
+        }
+        await axios.post('https://slack.com/api/chat.postMessage', qs.stringify(anniversaryMessage))
+      }
     } else {
       // We have a runner-up! Record this fact in the database as well, after checking validity.
       if (validRunnerUp(uuid, user, now)) {

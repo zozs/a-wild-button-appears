@@ -1,10 +1,10 @@
 {
   "name": "a-wild-button-appears",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A wild BUTTON appears - a useless bot for Slack.",
   "main": "wildbutton.js",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.19.0",
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
     "lodash.random": "^3.2.0",
