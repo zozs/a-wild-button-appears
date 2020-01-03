@@ -18,7 +18,7 @@ if (!admin.apps.length) {
   })
 }
 
-const firestore = admin.firestore()
+// const firestore = admin.firestore()
 
 async function signingSecret (team) {
   /*

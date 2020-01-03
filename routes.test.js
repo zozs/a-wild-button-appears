@@ -3,6 +3,9 @@
 const request = require('supertest')
 const app = require('./wildbutton')
 
+// silence console.debug
+console.debug = jest.fn()
+
 jest.mock('./db')
 jest.mock('./slack-request-verifier')
 
@@ -31,5 +34,39 @@ describe('Test help command', () => {
       })
     expect(response.statusCode).toBe(200)
     expect(response.text).toMatch(/totally useless/)
+  })
+})
+
+describe('Test stats command', () => {
+  test('It should respond.', async () => {
+    const response = await commandRequest(app)
+      .send({
+        text: 'stats',
+        team_id: 'TESTTEAMID'
+      })
+    expect(response.statusCode).toBe(200)
+    expect(response.text).toMatch(/STATISTICS/)
+  })
+})
+
+describe('Test usage command', () => {
+  test('It should respond to usage', async () => {
+    const response = await commandRequest(app)
+      .send({
+        text: 'usage',
+        team_id: 'TESTTEAMID'
+      })
+    expect(response.statusCode).toBe(200)
+    expect(response.text).toMatch(/understand you/)
+  })
+
+  test('It should respond to any invalid command', async () => {
+    const response = await commandRequest(app)
+      .send({
+        text: 'somethinginvalid',
+        team_id: 'TESTTEAMID'
+      })
+    expect(response.statusCode).toBe(200)
+    expect(response.text).toMatch(/understand you/)
   })
 })
