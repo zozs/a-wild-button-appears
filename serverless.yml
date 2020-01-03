@@ -1,0 +1,49 @@
+service: wildbutton
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: eu-north-1
+  stage: ${opt:stage, 'dev'}
+
+custom:
+  firebase: ${file(./wildbutton-firebase-adminsdk.json)}
+
+# TODO: exclude firebase credential json file here?
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.js
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.js
+#    - exclude-me-dir/**
+
+functions:
+  wildbutton:
+    handler: handler-serverless.handler
+    events:
+    - http:
+        path: /
+        method: get
+    - http:
+        path: /commands
+        method: post
+    - http:
+        path: /interactive
+        method: post
+    environment: # we also get some environment variables from .env
+      FIREBASE_CRED_TYPE: ${self:custom.firebase.type}
+      FIREBASE_CRED_PROJECT_ID: ${self:custom.firebase.project_id}
+      FIREBASE_CRED_PRIVATE_KEY_ID: ${self:custom.firebase.private_key_id}
+      FIREBASE_CRED_PRIVATE_KEY: ${self:custom.firebase.private_key}
+      FIREBASE_CRED_CLIENT_EMAIL: ${self:custom.firebase.client_email}
+      FIREBASE_CRED_CLIENT_ID: ${self:custom.firebase.client_id}
+      FIREBASE_CRED_AUTH_URI: ${self:custom.firebase.auth_uri}
+      FIREBASE_CRED_TOKEN_URI: ${self:custom.firebase.token_uri}
+      FIREBASE_CRED_AUTH_PROVIDER: ${self:custom.firebase.auth_provider_x509_cert_url}
+      FIREBASE_CRED_CLIENT_X509: ${self:custom.firebase.client_x509_cert_url}
+
+plugins:
+  - serverless-offline
+  - serverless-dotenv-plugin

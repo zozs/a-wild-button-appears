@@ -1,97 +1,33 @@
-const fs = require('fs')
-const { promisify } = require('util')
+const admin = require('firebase-admin')
 
-const dataFilename = process.env.DATA
-
-function parseJSON () {
-  try {
-    let jsonData = fs.readFileSync(dataFilename, 'utf8')
-    return JSON.parse(jsonData)
-  } catch (e) {
-    return {
-      clicks: {}
-    }
-  }
-}
-
-async function saveJSON (dataObj) {
-  let jsonData = JSON.stringify(dataObj)
-  await promisify(fs.writeFile)(dataFilename, jsonData, 'utf8')
-}
-
-// Parse the data once on startup, then save when changes are made.
-let data = parseJSON()
-
-// Data manipulation functions below.
-function clicksPerUser () {
-  let clicks = {}
-  Object.entries(data.clicks).forEach(([uuid, clickData]) => {
-    let user = ''
-    if (typeof clickData === 'string') {
-      // Old-style format, only user, no time.
-      user = clickData
-    } else {
-      // New-style format, where both user and click-time is recorded.
-      user = clickData.user
-    }
-
-    if (!clicks.hasOwnProperty(user)) {
-      clicks[user] = 0
-    }
-    clicks[user]++
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      type: process.env.FIREBASE_CRED_TYPE,
+      project_id: process.env.FIREBASE_CRED_PROJECT_ID,
+      private_key_id: process.env.FIREBASE_CRED_PRIVATE_KEY_ID,
+      private_key: process.env.FIREBASE_CRED_PRIVATE_KEY,
+      client_email: process.env.FIREBASE_CRED_CLIENT_EMAIL,
+      client_id: process.env.FIREBASE_CRED_CLIENT_ID,
+      auth_uri: process.env.FIREBASE_CRED_AUTH_URI,
+      token_uri: process.env.FIREBASE_CRED_TOKEN_URI,
+      auth_provider_x509_cert_url: process.env.FIREBASE_CRED_AUTH_PROVIDER,
+      client_x509_cert_url: process.env.FIREBASE_CRED_X509
+    }),
+    databaseURL: process.env.FIREBASE_DATABASEURL
   })
-
-  // Now return sorted as a list.
-  let sorted = []
-  Object.entries(clicks).forEach(([user, count]) => sorted.push({user: user, count: count}))
-  sorted.sort((a, b) => b.count - a.count)
-  return sorted
 }
 
-function clickTimes () {
-  return Object.entries(data.clicks)
-    .filter(([start, clickData]) => typeof clickData !== 'string')
-    .map(([start, clickData]) => ({
-      user: clickData.user,
-      time: Date.parse(clickData.clickTime) - Date.parse(start),
-      date: start
-    }))
-}
+const firestore = admin.firestore()
 
-function recentClickTimes (n) {
-  const times = clickTimes()
-  times.sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
-  return times.slice(0, n)
-}
-
-function fastestClickTimes (n) {
-  const times = clickTimes()
-  times.sort((a, b) => a.time - b.time)
-  return times.slice(0, n)
-}
-
-function slowestClickTimes (n) {
-  const times = clickTimes()
-  times.sort((a, b) => b.time - a.time)
-  return times.slice(0, n)
+async function signingSecret (team) {
+  /*const { rows } = await pool.query('SELECT signing_secret FROM instances WHERE team = $1', [team])
+  if (rows[0] === undefined) {
+    throw new Error('No such team in database!')
+  }
+  return rows[0].signing_secret*/
 }
 
 module.exports = {
-  isClicked: (uuid) => data.clicks.hasOwnProperty(uuid),
-  setClicked: async (uuid, user, clickTime) => {
-    data.clicks[uuid] = { user, clickTime, runnersUp: [] }
-    await saveJSON(data)
-    return data.clicks[uuid]
-  },
-  addRunnerUp: async (uuid, user, clickTime) => {
-    data.clicks[uuid].runnersUp.push({ user, clickTime })
-    await saveJSON(data)
-    return data.clicks[uuid]
-  },
-  clickForUuid: (uuid) => data.clicks[uuid],
-  clicksPerUser: () => clicksPerUser(),
-  recentClickTimes: (n) => recentClickTimes(n),
-  slowestClickTimes: (n) => slowestClickTimes(n),
-  fastestClickTimes: (n) => fastestClickTimes(n),
-  totalClicks: () => Object.keys(data.clicks).length
+  signingSecret
 }
