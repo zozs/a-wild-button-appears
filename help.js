@@ -1,6 +1,6 @@
 module.exports = async (res) => {
-  let helpMessage = {
-    text: `*A wild BUTTON appears - _a totally useless Slack bot_*`,
+  const helpMessage = {
+    text: '*A wild BUTTON appears - _a totally useless Slack bot_*',
     attachments: [
       {
         title: 'Commands',

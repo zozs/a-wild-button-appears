@@ -32,7 +32,7 @@ function wonMessageFormatter (uuid, click) {
   const attachments = [
     {
       text: `:heavy_check_mark: <@${click.user}> won (${winnerClickTime} s)!`,
-      ...(click.runnersUp.length > 0 && {footer: runnersUpTexts.join(', ') + ' was close!'})
+      ...(click.runnersUp.length > 0 && { footer: runnersUpTexts.join(', ') + ' was close!' })
     }
   ]
   const wonMessage = {
@@ -56,7 +56,7 @@ module.exports = async (res, body) => {
       console.debug(`${now}: ${user}: Recorded successful click!`)
 
       // Check if it is a special click!
-      if (db.totalClicks() % 100 == 0) {
+      if (db.totalClicks() % 100 === 0) {
         const attachments = [{
           text: `You are the winner of the ${db.totalClicks()}th button!`,
           color: '#74c8ed'

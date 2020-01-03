@@ -1,4 +1,3 @@
-const crypto = require('crypto')
 const createError = require('http-errors')
 
 // Mock of request verifier that simply skips the actual hmac verification part. everything else is the same though.
@@ -10,7 +9,6 @@ module.exports = {
       return next(createError(403, 'Request is missing Slack object on request object.'))
     }
 
-    const { version, requestTimestamp, body, hash } = req.slack
     const team = req.body.team_id
     if (team === undefined) {
       console.error('No Slack team in request object!')
@@ -18,10 +16,12 @@ module.exports = {
     }
     req.slack.team = team
 
-    /*if (hash !== hmac.digest('hex')) {
+    /*
+    if (hash !== hmac.digest('hex')) {
         console.error('Invalid signature on request!')
         return next(createError(403, 'Slack request signing verification failed'))
-    }*/
+    }
+    */
     next()
   }
 }

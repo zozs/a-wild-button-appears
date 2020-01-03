@@ -18,7 +18,7 @@ module.exports = (app) => {
   app.post('/commands', extractUrlencoded, slackVerify, async (req, res) => {
     // extract slash command text from payload
     const body = req.body
-    const team = req.slack.team
+    // const team = req.slack.team
 
     // create the dialog payload - includes the dialog structure, Slack API token,
     // and trigger ID

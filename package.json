@@ -1,6 +1,6 @@
 {
   "name": "a-wild-button-appears",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "A wild BUTTON appears - a useless bot for Slack.",
   "main": "wildbutton.js",
   "dependencies": {
@@ -32,5 +32,10 @@
   "bugs": {
     "url": "https://github.com/zozs/a-wild-button-appears/issues"
   },
-  "homepage": "https://github.com/zozs/a-wild-button-appears#readme"
+  "homepage": "https://github.com/zozs/a-wild-button-appears#readme",
+  "standard": {
+    "ignore": [
+      "db-json.js"
+    ]
+  }
 }

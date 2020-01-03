@@ -10,7 +10,7 @@ module.exports = {
     }
 
     const { version, requestTimestamp, body, hash } = req.slack
-    //const team = req.body.team.id || req.body.team // TODO: old one, but this cannot work?
+    // const team = req.body.team.id || req.body.team // TODO: old one, but this cannot work?
     const team = req.body.team_id
     if (team === undefined) {
       console.error('No Slack team in request object!')

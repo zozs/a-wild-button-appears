@@ -21,11 +21,13 @@ if (!admin.apps.length) {
 const firestore = admin.firestore()
 
 async function signingSecret (team) {
-  /*const { rows } = await pool.query('SELECT signing_secret FROM instances WHERE team = $1', [team])
+  /*
+  const { rows } = await pool.query('SELECT signing_secret FROM instances WHERE team = $1', [team])
   if (rows[0] === undefined) {
     throw new Error('No such team in database!')
   }
-  return rows[0].signing_secret*/
+  return rows[0].signing_secret
+  */
 }
 
 module.exports = {

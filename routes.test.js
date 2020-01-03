@@ -1,4 +1,5 @@
-const crypto = require('crypto')
+/* global jest, describe, expect, test */
+
 const request = require('supertest')
 const app = require('./wildbutton')
 
@@ -13,8 +14,6 @@ function commandRequest (app) {
     .set('X-Slack-Request-Timestamp', Math.floor(Date.now() / 1000))
 }
 
-
-
 describe('Test the root path', () => {
   test('It should response the GET method', async () => {
     const response = await request(app).get('/')
@@ -24,7 +23,7 @@ describe('Test the root path', () => {
 })
 
 describe('Test help command', () => {
-  test('It should respond.', async () => {
+  test('It should respond.', async () => {
     const response = await commandRequest(app)
       .send({
         text: 'help',
