@@ -18,7 +18,7 @@ function commandRequest (app) {
 }
 
 describe('Test the root path', () => {
-  test('It should response the GET method', async () => {
+  test('It should respond.', async () => {
     const response = await request(app).get('/')
     expect(response.statusCode).toBe(200)
     expect(response.text).toMatch(/API is ready/)

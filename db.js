@@ -20,6 +20,14 @@ if (!admin.apps.length) {
 
 // const firestore = admin.firestore()
 
+/**
+ * Returns a list of instance objects for instances that does not have any scheduled
+ * message according to Slack.
+ */
+async function instancesWithNoScheduledAnnounces () {
+  
+}
+
 async function signingSecret (team) {
   /*
   const { rows } = await pool.query('SELECT signing_secret FROM instances WHERE team = $1', [team])
@@ -31,5 +39,6 @@ async function signingSecret (team) {
 }
 
 module.exports = {
+  instancesWithNoScheduledAnnounces,
   signingSecret
 }

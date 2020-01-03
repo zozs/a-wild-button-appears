@@ -1,6 +1,6 @@
 require('dotenv').config()
 const express = require('express')
-const mountAnnounces = require('./announces')
+// const mountAnnounces = require('./announces')
 const mountRoutes = require('./routes')
 
 const app = express()
@@ -28,6 +28,6 @@ const app = express()
  */
 
 mountRoutes(app)
-mountAnnounces()
+// mountAnnounces()
 
 module.exports = app
