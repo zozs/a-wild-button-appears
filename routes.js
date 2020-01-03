@@ -1,4 +1,4 @@
-const announceCommand = require('./announce')
+// const button = require('./button')
 const clickHandler = require('./click')
 const helpCommand = require('./help')
 const statsCommand = require('./stats')
@@ -26,7 +26,8 @@ module.exports = (app) => {
     try {
       if (body.text === 'announce' && process.env.ALLOW_MANUAL_ANNOUNCE === 'yes') { // TODO: check with db
         res.send('')
-        await announceCommand(new Date().toISOString())
+        throw new Error('not yet implemented')
+        // await announceCommand(new Date().toISOString())
       } else if (body.text === 'stats') {
         await statsCommand(res)
       } else if (body.text === 'help') {

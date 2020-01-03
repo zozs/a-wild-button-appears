@@ -1,7 +1,5 @@
 const db = require('./db')
-
-const axios = require('axios')
-const qs = require('querystring')
+const slack = require('./slack')
 
 function diffTime (uuid, time) {
   return (Date.parse(time) - Date.parse(uuid)) / 1000
@@ -62,13 +60,14 @@ module.exports = async (res, body) => {
           color: '#74c8ed'
         }]
         const anniversaryMessage = {
-          token: process.env.SLACK_ACCESS_TOKEN,
           as_user: false,
           text: '*:tada: Congratulations! :confetti_ball:*',
           attachments: JSON.stringify(attachments),
           channel: process.env.ANNOUNCE_CHANNEL
         }
-        await axios.post('https://slack.com/api/chat.postMessage', qs.stringify(anniversaryMessage))
+        // await axios.post('https://slack.com/api/chat.postMessage', qs.stringify(anniversaryMessage))
+        // TODO: need instance instead of undefined.
+        await slack.postMessage(undefined, anniversaryMessage)
       }
     } else {
       // We have a runner-up! Record this fact in the database as well, after checking validity.

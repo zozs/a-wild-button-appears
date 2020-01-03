@@ -1,8 +1,5 @@
-const axios = require('axios')
-const qs = require('querystring')
-
-module.exports = async (uuid) => {
-  console.debug('Announcing button with uuid:', uuid)
+module.exports = (uuid) => {
+  console.debug('Constructing button with uuid:', uuid)
 
   const buttonAttachment = {
     text: '',
@@ -21,12 +18,13 @@ module.exports = async (uuid) => {
 
   const attachments = [buttonAttachment]
   const announceMessage = {
-    token: process.env.SLACK_ACCESS_TOKEN,
     as_user: false,
     text: '*A wild BUTTON appears!*',
     attachments: JSON.stringify(attachments),
     channel: process.env.ANNOUNCE_CHANNEL
   }
-  await axios.post('https://slack.com/api/chat.postMessage', qs.stringify(announceMessage))
-  console.debug('Announced button with uuid:', uuid)
+  // await axios.post('https://slack.com/api/chat.postMessage', qs.stringify(announceMessage))
+  // TODO: needs instance object instead of undefined, heh.
+  // await slack.postMessage(undefined, announceMessage)
+  return announceMessage
 }

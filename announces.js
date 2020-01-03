@@ -1,9 +1,10 @@
-const announceCommand = require('./announce')
+const button = require('./button')
 const schedule = require('node-schedule')
 
 const { DateTime } = require('luxon')
 
 const db = require('./db')
+const slack = require('./slack')
 
 // XXX: only used if NOT running a serverless instance, if serverless, a scheduled
 // event to a specific endpoint is used instead.
@@ -33,11 +34,10 @@ async function hourlyCheck () {
   const now = DateTime.local()
   const toUpdate = await db.instancesWithNoScheduledAnnounces()
   for (const instance of toUpdate) {
+    // Schedule a new button for this instance.
     const timestamp = await nextAnnounce(instance, now)
-
-    // update next_announce.
-
-    // schedule appearance.
+    // TODO: still need to add timestamp for when to schedule it...
+    await slack.scheduleMessage(instance, button(timestamp.toISO()))
   }
 }
 
@@ -94,7 +94,7 @@ async function nextAnnounce (instance, localNow) {
   }
 
   // We only reach this if we have tried a lot of times, and failed to find a valid date.
-  throw new Error('Calculation of next announce is stuck in infinite loop!')
+  throw new Error('Calculation of next announce is stuck in an infinite loop!')
 }
 
 function randomInt (a = 1, b = 0) {
@@ -103,31 +103,10 @@ function randomInt (a = 1, b = 0) {
   return Math.floor(lower + Math.random() * (upper - lower + 1))
 }
 
-async function randomScheduleToday () {
-  // Randomly select a time during work hours (9.00 - 16.00) when the button will appear.
-  // (this assumes that this function is called at around 00:00)
-  const delta = randomInt(9 * 3600 * 1000, 16 * 3600 * 1000)
-  let when = Date.now() + delta
-  let whenDate = new Date(when)
-  console.log('Button will appear:', whenDate.toISOString())
-  schedule.scheduleJob(whenDate, announce)
-}
-
 function weekdayInMask (weekday, mask) {
   // weekday is 1 for Monday, 7 for Sunday.
   // mask is of form 0b1111100 for Monday-Friday.
   return ((1 << (6 - (weekday - 1))) & mask) !== 0
-}
-
-async function announce () {
-  // Time to make the wild BUTTON appear.
-  try {
-    console.log('Announcing button')
-    const now = new Date()
-    await announceCommand(now.toISOString())
-  } catch (e) {
-    console.error('Failed to announce button! Got error:', e)
-  }
 }
 
 module.exports = {

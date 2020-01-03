@@ -25,7 +25,7 @@ if (!admin.apps.length) {
  * message according to Slack.
  */
 async function instancesWithNoScheduledAnnounces () {
-  
+
 }
 
 async function signingSecret (team) {

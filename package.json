@@ -4,7 +4,7 @@
   "description": "A wild BUTTON appears - a useless bot for Slack.",
   "main": "wildbutton.js",
   "dependencies": {
-    "axios": "^0.19.0",
+    "@slack/web-api": "^5.6.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "firebase-admin": "^8.9.0",
