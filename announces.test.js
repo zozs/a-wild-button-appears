@@ -1,9 +1,12 @@
 /* global jest, describe, expect, test */
 
-const { nextAnnounce } = require('./announces')
+const { hourlyCheck, nextAnnounce } = require('./announces')
 const { DateTime } = require('luxon')
 
+const slack = require('./slack')
+
 jest.mock('./db')
+jest.mock('./slack')
 
 expect.extend({
   toBeWithinRange (received, floor, ceiling) {
@@ -62,6 +65,13 @@ describe('own defined range expect extension works when', () => {
     const high = DateTime.fromISO('2020-01-03T16:00:00', { zone })
     const val = DateTime.fromISO('2020-01-04T07:12:34', { zone })
     expect(val).not.toBeWithinRange(low, high)
+  })
+})
+
+describe('hourly check', () => {
+  test('causes message to be scheduled for non-scheduled instances', async () => {
+    await hourlyCheck()
+    expect(slack.scheduleMessage.mock.calls.length).toBe(1)
   })
 })
 

@@ -6,8 +6,13 @@ module.exports = {
     await web.chat.postMessage(data)
   },
 
-  async scheduleMessage (instance, data) {
+  async scheduleMessage (instance, timestamp, data) {
     const web = new WebClient(instance.accessToken)
-    await web.chat.scheduleMessage(data)
+    const object = {
+      ...data,
+      channel: instance.channel,
+      post_at: Math.floor(timestamp.toSeconds())
+    }
+    await web.chat.scheduleMessage(object)
   }
 }

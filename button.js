@@ -1,6 +1,4 @@
-module.exports = (uuid) => {
-  console.debug('Constructing button with uuid:', uuid)
-
+module.exports = (timestamp) => {
   const buttonAttachment = {
     text: '',
     fallback: 'No button for you :(',
@@ -11,7 +9,7 @@ module.exports = (uuid) => {
         text: 'Click it!',
         type: 'button',
         style: 'primary',
-        value: uuid
+        value: timestamp.toISO()
       }
     ]
   }
@@ -23,8 +21,5 @@ module.exports = (uuid) => {
     attachments: JSON.stringify(attachments),
     channel: process.env.ANNOUNCE_CHANNEL
   }
-  // await axios.post('https://slack.com/api/chat.postMessage', qs.stringify(announceMessage))
-  // TODO: needs instance object instead of undefined, heh.
-  // await slack.postMessage(undefined, announceMessage)
   return announceMessage
 }
