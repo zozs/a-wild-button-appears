@@ -1,4 +1,24 @@
+/* global jest */
+
 module.exports = {
+  clickData (uuid) {
+    return {
+      clicks: [
+        {
+          user: 'test1',
+          clickTime: '2020-01-02T12:34:56.000Z'
+        },
+        {
+          user: 'test2',
+          clickTime: '2020-01-02T12:34:56.350Z'
+        },
+        {
+          user: 'test3',
+          clickTime: '2020-01-02T12:34:57.350Z'
+        }
+      ]
+    }
+  },
   clicksPerUser () {
     return [
       {
@@ -32,6 +52,9 @@ module.exports = {
   async lastAnnounce () {
     return '2020-01-02T12:34:56'
   },
+  recordClick: jest.fn(async (uuid, user, time) => {
+    return true
+  }),
   recentClickTimes () { return [] },
   slowestClickTimes () { return [] },
   async signingSecret (team) {

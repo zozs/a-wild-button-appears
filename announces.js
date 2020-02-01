@@ -24,6 +24,8 @@ async function hourlyCheck () {
     // Schedule a new button for this instance.
     const now = DateTime.local()
     const timestamp = await nextAnnounce(instance, now)
+    // TODO: we must also add it to the database here, so we initialize an entry for it so it is ready
+    // when someone actually clicks it later on.
     await slack.scheduleMessage(instance, button(timestamp))
   }
 }

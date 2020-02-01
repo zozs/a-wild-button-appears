@@ -27,7 +27,11 @@ Every hour, perform these actions.
 ## Other random notes
 
 If the announce settings are changed, we should perhaps immediately clear the `next_announce` by invalidating
-the currently scheduled message for the team, and the re-run the calculations above. If we use the logic above,
+the currently scheduled message for the team, and the re-run the calculations above. Note that invalidating an
+entry probably means both remove it from a scheduled Slack message, and remove any initialized-but-not-clicked
+buttons in the database.
+
+If we use the logic above,
 this would probably work out quite well, since it would guarantee that a button will appear this day, if it hasn't
 already, and if it has already appeared, we should wait until tomorrow. We need to take care of the special case
 where there hasn't been a button today, but we're now outside of the interval. It should be fairly easy to detect

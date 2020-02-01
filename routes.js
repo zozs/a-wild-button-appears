@@ -44,8 +44,12 @@ module.exports = (app) => {
   // Will receive response when user clicks button.
   app.post('/interactive', extractUrlencoded, slackVerify, async (req, res) => {
     const body = JSON.parse(req.body.payload)
-
-    // Somebody clicked!
-    await clickHandler(res, body)
+    // TODO: actually check what type of interaction we got here to ensure it's a click.
+    try {
+      // Somebody clicked!
+      await clickHandler(res, body)
+    } catch (e) {
+      console.error('Failed to register click. Got error:', e)
+    }
   })
 }
