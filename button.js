@@ -1,25 +1,33 @@
 module.exports = (timestamp) => {
-  const buttonAttachment = {
-    text: '',
-    fallback: 'No button for you :(',
-    callback_id: 'wild',
-    actions: [
-      {
-        name: 'wild_button',
-        text: 'Click it!',
-        type: 'button',
-        style: 'primary',
-        value: timestamp.toISO()
+  const blocks = [
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: '*A wild BUTTON appears!*'
       }
-    ]
-  }
+    },
+    {
+      type: 'actions',
+      elements: [
+        {
+          type: 'button',
+          text: {
+            type: 'plain_text',
+            text: 'Click it!',
+            emoji: true
+          },
+          action_id: 'wild_button',
+          value: timestamp.toISO(),
+          style: 'primary'
+        }
+      ]
+    }
+  ]
 
-  const attachments = [buttonAttachment]
   const announceMessage = {
-    as_user: false,
-    text: '*A wild BUTTON appears!*',
-    attachments: JSON.stringify(attachments),
-    channel: process.env.ANNOUNCE_CHANNEL
+    text: 'A wild BUTTON appears!',
+    blocks
   }
   return announceMessage
 }

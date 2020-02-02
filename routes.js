@@ -43,13 +43,19 @@ module.exports = (app) => {
 
   // Will receive response when user clicks button.
   app.post('/interactive', extractUrlencoded, slackVerify, async (req, res) => {
-    const body = JSON.parse(req.body.payload)
-    // TODO: actually check what type of interaction we got here to ensure it's a click.
     try {
-      // Somebody clicked!
-      await clickHandler(res, body)
+      const payload = JSON.parse(req.body.payload)
+
+      if (payload.type === 'block_actions' && payload.actions[0].action_id === 'wild_button') {
+        // Somebody clicked!
+        await clickHandler(res, payload)
+      } else {
+        console.debug(`Got unknown interactive response payload: ${req.body.payload}`)
+        res.sendStatus(400)
+      }
     } catch (e) {
       console.error('Failed to register click. Got error:', e)
+      res.sendStatus(500)
     }
   })
 }

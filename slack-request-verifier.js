@@ -10,11 +10,26 @@ module.exports = {
     }
 
     const { version, requestTimestamp, body, hash } = req.slack
-    // const team = req.body.team.id || req.body.team // TODO: old one, but this cannot work?
-    const team = req.body.team_id
+
+    let team = req.body.team_id
     if (team === undefined) {
-      console.error('No Slack team in request object!')
-      return next(createError(400, 'Request object is missing Slack team.'))
+      // There wasn't a regular team_id parameter, perhaps there's a team.id inside a payload?
+      // This is the case for interactive responses.
+      try {
+        const { payload } = req.body
+        const parsed = JSON.parse(payload)
+        if (parsed.team) {
+          team = parsed.team.id
+        }
+
+        if (team === undefined) {
+          throw new Error('Could not extract from payload')
+        }
+      } catch (e) {
+        console.log(e)
+        console.error('No Slack team in request object!')
+        return next(createError(400, 'Request object is missing Slack team.'))
+      }
     }
     req.slack.team = team
 
