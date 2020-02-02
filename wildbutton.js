@@ -8,12 +8,10 @@ const app = express()
 /*
  * Environmental variables required:
  *
- * ALLOW_MANUAL_ANNOUNCE: Set to 'yes' to allow manual announcement of button.
- * SLACK_ACCESS_TOKEN: The app token
  * SLACK_SIGNING_SECRET: The secret used to verify that requests come from Slack
+ * SLACK_CLIENT_ID: The public client id of the app.
+ * SLACK_CLIENT_SECRET: The private client secret of the app.
  * PORT: Port for HTTP server to listen on
- * ANNOUNCE_CHANNEL: Channel ID (e.g. C12345678) in which to post the button.
- * DATA: path to json-file where statistics are stored.
  * FIREBASE_DATABASEURL
  * FIREBASE_CRED_TYPE
  * FIREBASE_CRED_PROJECT_ID

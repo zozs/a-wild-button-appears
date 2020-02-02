@@ -1,6 +1,7 @@
 // const button = require('./button')
 const clickHandler = require('./click')
 const helpCommand = require('./help')
+const installCommand = require('./install')
 const statsCommand = require('./stats')
 const usageCommand = require('./usage')
 
@@ -56,6 +57,25 @@ module.exports = (app) => {
     } catch (e) {
       console.error('Failed to register click. Got error:', e)
       res.sendStatus(500)
+    }
+  })
+
+  // Will handle direct installation of app to workspace
+  app.get('/install', async (req, res) => {
+    const clientId = process.env.SLACK_CLIENT_ID
+    const scopes = 'channels:read,chat:write,commands,groups:read,im:write'
+    res.redirect(`https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=${scopes}`)
+  })
+
+  // Will handle the OAuth 2.0 redirect after user has authorized app install.
+  app.get('/auth', async (req, res) => {
+    const { code } = req.query
+    try {
+      await installCommand(code)
+      res.send('App installed successfully!')
+    } catch (e) {
+      console.debug('Failed to install app, got error:', e)
+      res.sendStatus(400)
     }
   })
 }

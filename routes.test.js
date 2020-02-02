@@ -2,12 +2,14 @@
 
 const request = require('supertest')
 const app = require('./wildbutton')
+const install = require('./install')
 
 // silence console.debug
 console.debug = jest.fn()
 
 jest.mock('./click')
 jest.mock('./db')
+jest.mock('./install')
 jest.mock('./slack-request-verifier')
 
 function commandRequest (app) {
@@ -69,6 +71,36 @@ describe('Test usage command', () => {
       })
     expect(response.statusCode).toBe(200)
     expect(response.text).toMatch(/understand you/)
+  })
+})
+
+function authRequest (app) {
+  return request(app)
+    .get('/auth')
+}
+
+describe('Test auth command', () => {
+  test('It should return 200 on ok.', async () => {
+    install.mockImplementation(async code => true)
+    const response = await authRequest(app)
+      .query({
+        code: '1234567890',
+        state: ''
+      })
+    expect(response.statusCode).toBe(200)
+    expect(response.text).toMatch(/success/)
+  })
+
+  test('It should return 400 on failure.', async () => {
+    install.mockImplementation(async code => {
+      throw new Error('mockup error')
+    })
+    const response = await authRequest(app)
+      .query({
+        code: '1234567890',
+        state: ''
+      })
+    expect(response.statusCode).toBe(400)
   })
 })
 
