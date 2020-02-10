@@ -32,6 +32,7 @@ module.exports = {
     ]
   },
   fastestClickTimes () { return [] },
+  installInstance: jest.fn(async (instance) => {}),
   async instancesWithNoScheduledAnnounces () {
     return [
       {

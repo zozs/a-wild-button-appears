@@ -16,4 +16,12 @@ module.exports = async code => {
     client_secret: clientSecret,
     code
   })
+
+  // Store stuff in database.
+  db.installInstance({
+    webhook: result.incoming_webhook.url
+  })
+
+  // result.team_id
+  // result.access_token
 }
