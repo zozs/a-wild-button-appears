@@ -4,6 +4,7 @@ const slack = require('./slack')
 
 const { DateTime } = require('luxon')
 const { WebClient, mockScheduleMessage } = require('@slack/web-api')
+const { IncomingWebhook, mockSend } = require('@slack/webhook')
 
 jest.mock('@slack/web-api')
 
@@ -52,5 +53,14 @@ describe('slack api', () => {
     expect(WebClient).toHaveBeenCalledTimes(1)
     expect(mockScheduleMessage).toHaveBeenCalledTimes(1)
     expect(mockScheduleMessage.mock.calls[0][0]).toHaveProperty('post_at', Math.floor(t.toSeconds()))
+  })
+
+  test('replacing response has replace_original set', async () => {
+    const url = 'https://test.example.com/hook'
+    const data = {}
+    await slack.sendReplacingResponse(url, data)
+    expect(IncomingWebhook).toHaveBeenCalledTimes(1)
+    expect(mockSend).toHaveBeenCalledTimes(1)
+    expect(mockSend.mock.calls[0][0]).toHaveProperty('replace_original', true)
   })
 })
