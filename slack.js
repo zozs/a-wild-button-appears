@@ -7,14 +7,6 @@ module.exports = {
     await web.chat.postMessage(data)
   },
 
-  async sendReplacingResponse (responseUrl, data) {
-    const webhook = new IncomingWebhook(responseUrl)
-    webhook.send({
-      ...data,
-      replace_original: true
-    })
-  },
-
   async scheduleMessage (instance, timestamp, data) {
     const web = new WebClient(instance.accessToken)
     const object = {
@@ -23,5 +15,24 @@ module.exports = {
       post_at: Math.floor(timestamp.toSeconds())
     }
     await web.chat.scheduleMessage(object)
+  },
+
+  async sendImToUser (instance, user, data) {
+    const web = new WebClient(instance.accessToken)
+    const conversationData = await web.conversations.open({
+      users: user
+    })
+    await web.chat.postMessage({
+      ...data,
+      channel: conversationData.channel.id
+    })
+  },
+
+  async sendReplacingResponse (responseUrl, data) {
+    const webhook = new IncomingWebhook(responseUrl)
+    webhook.send({
+      ...data,
+      replace_original: true
+    })
   }
 }

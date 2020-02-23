@@ -26,7 +26,7 @@ module.exports = (app) => {
     console.debug('Got slash command with text:', body.text)
     try {
       if (body.text === 'announce' && process.env.ALLOW_MANUAL_ANNOUNCE === 'yes') { // TODO: check with db
-        res.send('')
+        // res.send('')
         throw new Error('not yet implemented')
         // await announceCommand(new Date().toISOString())
       } else if (body.text === 'stats') {
@@ -63,8 +63,9 @@ module.exports = (app) => {
   // Will handle direct installation of app to workspace
   app.get('/install', async (req, res) => {
     const clientId = process.env.SLACK_CLIENT_ID
-    const scopes = 'channels:read,chat:write,commands,groups:read,im:write'
-    res.redirect(`https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=${scopes}`)
+    const scopes = 'channels:read,groups:read,im:read,chat:write,im:write,commands'
+    const redirectUri = process.env.SLACK_REDIRECT_URI
+    res.redirect(`https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=${scopes}&redirect_uri=${redirectUri}`)
   })
 
   // Will handle the OAuth 2.0 redirect after user has authorized app install.

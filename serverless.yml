@@ -8,6 +8,9 @@ provider:
 
 custom:
   firebase: ${file(./wildbutton-firebase-adminsdk.json)}
+  serverless-offline:
+    host: 0.0.0.0
+    port: 9850
 
 # TODO: exclude firebase credential json file here?
 # you can add packaging information here
@@ -27,8 +30,14 @@ functions:
         path: /
         method: get
     - http:
+        path: /auth
+        method: get
+    - http:
         path: /commands
         method: post
+    - http:
+        path: /install
+        method: get
     - http:
         path: /interactive
         method: post

@@ -1,4 +1,5 @@
 const db = require('./db')
+const slack = require('./slack')
 
 const { WebClient } = require('@slack/web-api')
 
@@ -14,14 +15,22 @@ module.exports = async code => {
   const result = await (new WebClient()).oauth.v2.access({
     client_id: clientId,
     client_secret: clientSecret,
+    redirect_uri: process.env.SLACK_REDIRECT_URI,
     code
   })
 
   // Store stuff in database.
-  db.installInstance({
-    webhook: result.incoming_webhook.url
+  const instance = await db.installInstance({
+    accessToken: result.access_token,
+    scope: result.scope,
+    botUserId: result.bot_user_id,
+    appId: result.app_id,
+    team: result.team,
+    authedUser: result.authed_user
   })
 
-  // result.team_id
-  // result.access_token
+  // tell user how configuration should be done by sending an IM to the installing user.
+  await slack.sendImToUser(instance, instance.authedUser.id, {
+    text: "Hi! I'm wildbutton! To configure me, do something."
+  })
 }

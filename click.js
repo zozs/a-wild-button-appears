@@ -1,9 +1,11 @@
 const db = require('./db')
 const slack = require('./slack')
 
+/*
 function diffTime (uuid, time) {
   return (Date.parse(time) - Date.parse(uuid)) / 1000
 }
+*/
 
 function formatTime (uuid, time) {
   return ((Date.parse(time) - Date.parse(uuid)) / 1000).toFixed(2)
@@ -79,7 +81,7 @@ function wonMessageFormatter (uuid, clickData) {
 }
 
 module.exports = async (res, payload) => {
-  const instance = undefined // TODO: get instance in some way.
+  // const instance = undefined // TODO: get instance in some way.
   const uuid = payload.actions[0].value
   const user = payload.user.id
   const now = new Date().toISOString()
