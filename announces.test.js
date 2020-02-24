@@ -73,6 +73,7 @@ describe('hourly check', () => {
   test('causes message to be scheduled for non-scheduled instances', async () => {
     await hourlyCheck()
     expect(slack.scheduleMessage.mock.calls.length).toBe(1)
+    expect(slack.scheduleMessage.mock.calls[0][0]).toHaveProperty('channel', testInstance.channel)
   })
 })
 

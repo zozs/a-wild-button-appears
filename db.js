@@ -49,7 +49,8 @@ module.exports = {
     await doc.create(instanceData)
 
     // TODO: if we already have an install on this team, what do we do?
-  
+    // TODO: consider using Team ID as document key instead, and limit to one install per team.
+
     // TODO: should this include the new randomly assigned id?
     return instanceData
   },
@@ -59,6 +60,7 @@ module.exports = {
    * message according to Slack.
    */
   async instancesWithNoScheduledAnnounces () {
+    // TODO: must not return instances with channel set to null.
     throw new Error('not implemented')
   },
   async lastAnnounce () {

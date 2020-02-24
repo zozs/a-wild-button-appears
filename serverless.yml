@@ -52,7 +52,28 @@ functions:
       FIREBASE_CRED_TOKEN_URI: ${self:custom.firebase.token_uri}
       FIREBASE_CRED_AUTH_PROVIDER: ${self:custom.firebase.auth_provider_x509_cert_url}
       FIREBASE_CRED_CLIENT_X509: ${self:custom.firebase.client_x509_cert_url}
+  wildbutton-hourlycheck:
+    handler: handler-serverless.hourly
+    events:
+    - schedule:
+        rate: rate(1 minute)
+        enabled: true
+        input:
+          key1: test
+          key2: hejsansvejsan
+    environment: # we also get some environment variables from .env
+      FIREBASE_CRED_TYPE: ${self:custom.firebase.type}
+      FIREBASE_CRED_PROJECT_ID: ${self:custom.firebase.project_id}
+      FIREBASE_CRED_PRIVATE_KEY_ID: ${self:custom.firebase.private_key_id}
+      FIREBASE_CRED_PRIVATE_KEY: ${self:custom.firebase.private_key}
+      FIREBASE_CRED_CLIENT_EMAIL: ${self:custom.firebase.client_email}
+      FIREBASE_CRED_CLIENT_ID: ${self:custom.firebase.client_id}
+      FIREBASE_CRED_AUTH_URI: ${self:custom.firebase.auth_uri}
+      FIREBASE_CRED_TOKEN_URI: ${self:custom.firebase.token_uri}
+      FIREBASE_CRED_AUTH_PROVIDER: ${self:custom.firebase.auth_provider_x509_cert_url}
+      FIREBASE_CRED_CLIENT_X509: ${self:custom.firebase.client_x509_cert_url}
 
 plugins:
+  - serverless-offline-scheduler
   - serverless-offline
   - serverless-dotenv-plugin

@@ -18,6 +18,7 @@
     "jest": "^24.9.0",
     "serverless-dotenv-plugin": "^2.1.1",
     "serverless-offline": "^5.12.1",
+    "serverless-offline-scheduler": "^0.4.1",
     "standard": "^14.3.1",
     "supertest": "^4.0.2"
   },

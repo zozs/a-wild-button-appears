@@ -1,19 +1,8 @@
-const button = require('./button')
-const schedule = require('node-schedule')
-
 const { DateTime } = require('luxon')
 
+const button = require('./button')
 const db = require('./db')
 const slack = require('./slack')
-
-// XXX: only used if NOT running a serverless instance, if serverless, a scheduled
-// event to a specific endpoint is used instead.
-// TODO: consider moving this to a separate module, that is only required for standalone.
-async function initSchedule () {
-  // Schedule one job that launches xx:00:01 every hour, and which
-  // randomly selects the next invocation during that day.
-  schedule.scheduleJob({ minute: 0, second: 1 }, hourlyCheck)
-}
 
 async function hourlyCheck () {
   // See NEXT_ANNOUNCE.md for a detailed description of next announce calculations.
