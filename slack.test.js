@@ -2,25 +2,16 @@
 
 const slack = require('./slack')
 
+const { Instance } = require('./instance')
+
 const { DateTime } = require('luxon')
 const { WebClient, mockOpen, mockPostMessage, mockScheduleMessage } = require('@slack/web-api')
 const { IncomingWebhook, mockSend } = require('@slack/webhook')
 
+jest.mock('./instance')
 jest.mock('@slack/web-api')
 
-const testInstance = {
-  // id: 0,
-  name: 'test instance',
-  accessToken: 'xoxp-1234',
-  signingSecret: 'TESTtoken',
-  team: 'T00000000',
-  channel: 'C00000000',
-  manualAnnounce: false,
-  weekdays: 0b1111100, // monday - friday
-  intervalStart: 32400, // 09:00
-  intervalEnd: 57600, // 16:00
-  timezone: 'Europe/Copenhagen'
-}
+const testInstance = new Instance()
 
 beforeEach(() => {
   // Clear all instances and calls to constructor and all methods
@@ -68,15 +59,12 @@ describe('slack api', () => {
   })
 
   test('send im to user first opens conversation, then sends message to it', async () => {
-    const instance = {
-
-    }
     const user = 'U1234'
     const data = { text: 'hej' }
 
     mockOpen.mockImplementation(async d => ({ channel: { id: 'D5678' } }))
 
-    await slack.sendImToUser(instance, user, data)
+    await slack.sendImToUser(testInstance, user, data)
     expect(WebClient).toHaveBeenCalledTimes(1)
     expect(mockOpen).toHaveBeenCalledTimes(1)
     expect(mockOpen.mock.calls[0][0]).toHaveProperty('users', user)

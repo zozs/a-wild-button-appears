@@ -5,7 +5,10 @@ const { DateTime } = require('luxon')
 
 const slack = require('./slack')
 
+const { Instance } = require('./instance')
+
 jest.mock('./db')
+jest.mock('./instance')
 jest.mock('./slack')
 
 expect.extend({
@@ -28,20 +31,7 @@ expect.extend({
 })
 
 // last announce in mock db is '2020-01-02T12:34:56'
-const testInstance = {
-  // id: 0,
-  accessToken: 'xoxp-1234',
-  team: {
-    id: 'T00000000',
-    name: 'Test team'
-  },
-  channel: 'C00000000',
-  manualAnnounce: false,
-  weekdays: 0b1111100, // monday - friday
-  intervalStart: 32400, // 09:00
-  intervalEnd: 57600, // 16:00
-  timezone: 'Europe/Copenhagen'
-}
+const testInstance = new Instance()
 
 describe('own defined range expect extension works when', () => {
   test('lower than range', () => {

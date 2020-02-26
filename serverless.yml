@@ -58,9 +58,6 @@ functions:
     - schedule:
         rate: rate(1 minute)
         enabled: true
-        input:
-          key1: test
-          key2: hejsansvejsan
     environment: # we also get some environment variables from .env
       FIREBASE_CRED_TYPE: ${self:custom.firebase.type}
       FIREBASE_CRED_PROJECT_ID: ${self:custom.firebase.project_id}

@@ -5,8 +5,10 @@ const install = require('./install')
 const db = require('./db')
 const slack = require('./slack')
 const { WebClient, mockAccess } = require('@slack/web-api')
+const { Instance } = require('./instance')
 
 jest.mock('./db')
+jest.mock('./instance')
 jest.mock('@slack/web-api')
 jest.mock('./slack')
 
@@ -48,26 +50,7 @@ const okResponse = {
   }
 }
 
-const testInstance = {
-  // id: 0,
-  accessToken: 'xoxb-17653672481-19874698323-pdFZKVeTuE8sk7oOcBrzbqgy',
-  team: {
-    id: 'T9TK3CUKW',
-    name: 'Test team'
-  },
-  channel: 'C00000000',
-  manualAnnounce: false,
-  weekdays: 0b1111100, // monday - friday
-  intervalStart: 32400, // 09:00
-  intervalEnd: 57600, // 16:00
-  timezone: 'Europe/Copenhagen',
-  scope: '',
-  botUserId: 'U12121212',
-  appId: 'A0KRD7HC3',
-  authedUser: {
-    id: 'U1234'
-  }
-}
+const testInstance = new Instance()
 
 describe('install redirect', () => {
   test('to try to get token and have code, id, and secret', async () => {

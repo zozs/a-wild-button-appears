@@ -89,6 +89,5 @@ function weekdayInMask (weekday, mask) {
 
 module.exports = {
   hourlyCheck,
-  initSchedule,
   nextAnnounce
 }
