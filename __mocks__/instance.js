@@ -5,7 +5,14 @@
  * Otherwise something is wrong and things will get sad :(
  */
 class Instance {
-  constructor () {
+  constructor (other) {
+    if (other !== undefined) {
+      // set properties from other object.
+      for (const [key, value] of Object.entries(other)) {
+        this[key] = value
+      }
+    }
+
     this.accessToken = 'xoxb-17653672481-19874698323-pdFZKVeTuE8sk7oOcBrzbqgy'
     this.team = {
       id: 'T9TK3CUKW',

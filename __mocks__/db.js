@@ -50,10 +50,11 @@ module.exports = {
       }
     ]
   },
-  async lastAnnounce () {
+  storeScheduled: jest.fn(async (instanceRef, timestamp, messageId) => {}),
+  lastAnnounce (instanceRef) {
     return '2020-01-02T12:34:56'
   },
-  recordClick: jest.fn(async (uuid, user, time) => {
+  recordClick: jest.fn(async (instanceRef, uuid, user, time) => {
     return true
   }),
   recentClickTimes () { return [] },

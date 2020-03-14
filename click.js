@@ -1,6 +1,8 @@
 const db = require('./db')
 const slack = require('./slack')
 
+const { DateTime } = require('luxon')
+
 /*
 function diffTime (uuid, time) {
   return (Date.parse(time) - Date.parse(uuid)) / 1000
@@ -84,7 +86,7 @@ module.exports = async (res, payload) => {
   // const instance = undefined // TODO: get instance in some way.
   const uuid = payload.actions[0].value
   const user = payload.user.id
-  const now = new Date().toISOString()
+  const now = DateTime.local()
 
   // immediately acknowledge click, we'll update message later.
   res.send('')

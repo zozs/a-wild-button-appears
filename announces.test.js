@@ -3,6 +3,7 @@
 const { hourlyCheck, nextAnnounce } = require('./announces')
 const { DateTime } = require('luxon')
 
+const db = require('./db')
 const slack = require('./slack')
 
 const { Instance } = require('./instance')
@@ -61,9 +62,19 @@ describe('own defined range expect extension works when', () => {
 
 describe('hourly check', () => {
   test('causes message to be scheduled for non-scheduled instances', async () => {
+    slack.scheduleMessage.mockImplementation(async () => ({
+      scheduled_message_id: 'Q1298393284',
+      post_at: '1562180400'
+    }))
+
     await hourlyCheck()
     expect(slack.scheduleMessage.mock.calls.length).toBe(1)
     expect(slack.scheduleMessage.mock.calls[0][0]).toHaveProperty('channel', testInstance.channel)
+
+    expect(db.storeScheduled.mock.calls.length).toBe(1)
+    expect(db.storeScheduled.mock.calls[0][0]).toHaveProperty('channel', testInstance.channel)
+    expect(db.storeScheduled.mock.calls[0][1]).toBeDefined()
+    expect(db.storeScheduled.mock.calls[0][2]).toBe('Q1298393284')
   })
 })
 

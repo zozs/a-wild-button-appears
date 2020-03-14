@@ -4,7 +4,14 @@
  * The purpose of this file is mostly to document the structure of the instance object.
  */
 class Instance {
-  constructor () {
+  constructor (other) {
+    if (other !== undefined) {
+      // set properties from other object.
+      for (const [key, value] of Object.entries(other)) {
+        this[key] = value
+      }
+    }
+
     this.accessToken = ''
     this.team = {
       id: '',
