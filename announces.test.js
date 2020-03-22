@@ -72,7 +72,7 @@ describe('hourly check', () => {
     expect(slack.scheduleMessage.mock.calls[0][0]).toHaveProperty('channel', testInstance.channel)
 
     expect(db.storeScheduled.mock.calls.length).toBe(1)
-    expect(db.storeScheduled.mock.calls[0][0]).toHaveProperty('channel', testInstance.channel)
+    expect(db.storeScheduled.mock.calls[0][0]).toBe('T00000000')
     expect(db.storeScheduled.mock.calls[0][1]).toBeDefined()
     expect(db.storeScheduled.mock.calls[0][2]).toBe('Q1298393284')
   })

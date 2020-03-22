@@ -42,6 +42,9 @@ const { DateTime } = require('luxon')
  *  }
  */
 
+// if we decide to use mongo the last answer on this page seems to be a neat way of exporting the connection from a module.
+// https://exceptionshub.com/how-to-connect-to-mongodb-synchronously-in-nodejs.html
+
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
@@ -203,10 +206,17 @@ module.exports = {
     return process.env.SLACK_SIGNING_SECRET
   },
 
-  async storeScheduled (instanceRef, timestamp, messageId) {
-    // timestamp is a Luxon DateTime object. We store it as a *UTC* timestamp in the database.
+  async storeScheduled (instanceRef, dateTime, messageId) {
+    // dateTime is a Luxon DateTime object. We store it as a *UTC* timestamp in the database.
     // It must be UTC so we can sort it using lexigraphical sort.
-    // const isoString = timestamp.toUTC().toISO()
-    throw new Error('not implemented')
+    const timestamp = dateTime.toUTC().toISO()
+
+    const instanceDocRef = firestore.collection(collectionName).doc(instanceRef)
+    await instanceDocRef.update({
+      scheduled: {
+        timestamp,
+        messageId
+      }
+    })
   }
 }

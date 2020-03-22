@@ -11,20 +11,26 @@ async function hourlyCheck () {
   const toUpdate = await db.instancesWithNoScheduledAnnounces()
   for (const instance of toUpdate) {
     // Schedule a new button for this instance.
+    // TODO: ugly since we assume that instanceRef is instance.team.id here.
+    const instanceRef = instance.team.id
+
     const now = DateTime.local()
     const timestamp = await nextAnnounce(instance, now)
 
     const { scheduled_message_id: messageId } = await slack.scheduleMessage(instance, button(timestamp))
-    await db.storeScheduled(instance, timestamp, messageId)
+    await db.storeScheduled(instanceRef, timestamp, messageId)
   }
 }
 
 async function nextAnnounce (instance, localNow) {
+  // TODO: ugly since we assume that instanceRef is instance.team.id here.
+  const instanceRef = instance.team.id
+
   // get timestamp of last button announce.
   const zone = instance.timezone
   const now = localNow.setZone(zone)
 
-  const lastAnnounceTimestamp = await db.lastAnnounce()
+  const lastAnnounceTimestamp = await db.lastAnnounce(instanceRef)
   const lastAnnounce = DateTime.fromISO(lastAnnounceTimestamp, { zone })
 
   // start with the assumption that we can announce a button today at 00:00:00.

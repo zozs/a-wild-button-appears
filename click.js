@@ -83,7 +83,8 @@ function wonMessageFormatter (uuid, clickData) {
 }
 
 module.exports = async (res, payload) => {
-  // const instance = undefined // TODO: get instance in some way.
+  // TODO: currently assuming that instanceRef is always team id.
+  const instanceRef = payload.team.id
   const uuid = payload.actions[0].value
   const user = payload.user.id
   const now = DateTime.local()
@@ -95,7 +96,7 @@ module.exports = async (res, payload) => {
   // firstClick is true if we believe this was the first click of the button.
   // it is up to the db layer to filter out duplicates and ensure all times are
   // within the runner up window.
-  const firstClick = await db.recordClick(uuid, user, now)
+  const firstClick = await db.recordClick(instanceRef, uuid, user, now)
   if (firstClick) {
     // send an "determining winner" response immediately, show final winner in about 2 seconds.
     await slack.sendReplacingResponse(payload.response_url, determiningMessageFormatter())

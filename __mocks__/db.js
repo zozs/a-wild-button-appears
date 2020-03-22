@@ -40,7 +40,10 @@ module.exports = {
         name: 'test instance',
         accessToken: 'xoxp-1234',
         signingSecret: 'TESTtoken',
-        team: 'T00000000',
+        team: {
+          id: 'T00000000',
+          name: 'testteam'
+        },
         channel: 'C00000000',
         manualAnnounce: false,
         weekdays: 0b1111100, // monday - friday
