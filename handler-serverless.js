@@ -13,6 +13,7 @@ module.exports.hourly = async (event, context) => {
       statusCode: 200
     }
   } catch (e) {
+    console.error(`Failed to perform hourly check, got error: ${JSON.stringify(e)}`)
     return {
       statusCode: 500,
       body: JSON.stringify({

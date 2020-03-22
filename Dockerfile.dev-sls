@@ -1,0 +1,12 @@
+FROM node:12
+
+RUN npm i -g serverless
+
+USER node
+RUN mkdir /home/node/app
+WORKDIR /home/node/app
+
+COPY package*json ./
+RUN npm i
+
+CMD [ "sls", "offline", "start" ]
