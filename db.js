@@ -1,9 +1,36 @@
-const admin = require('firebase-admin')
+const { MongoClient } = require('mongodb')
 
 const { DateTime } = require('luxon')
 
+// We introduce a singleton object that maintains the connection to the database.
+// This module will always return a Promise that resolves to such an instance.
+let dbReference = null
+
+const mongo = () => dbReference ? Promise.resolve(dbReference) : connectMongo()
+
+// We call this function to prepare a connection to the database as soon as this
+// module is loaded.
+mongo()
+
+// Function that stores reference to db as soon as connection is established.
+function connectMongo () {
+  return new Promise((resolve, reject) => {
+    console.log('Connecting to Mongo...')
+    MongoClient.connect(process.env.MONGO_URL, { useNewUrlParser: true }, (err, db) => {
+      if (err) {
+        dbReference = null
+        return reject(err)
+      } else {
+        console.log('Connected to Mongo...')
+        dbReference = db
+        resolve(db)
+      }
+    })
+  })
+}
+
 /**
- * Firebase schema:
+ * Instance schema:
  *
  *  accessToken = '',
  *  team = {,
@@ -23,7 +50,7 @@ const { DateTime } = require('luxon')
  *    id: '',
  *  },
  *  scheduled = {,
- *    timestamp: '1982-05-25T00:00:00.000Z'
+ *    timestamp: '1982-05-25T00:00:00.000Z' // but this is stored as a BSON datetime type.
  *    messageId: '',
  *  },
  *  buttons = {
@@ -31,41 +58,31 @@ const { DateTime } = require('luxon')
  *      clicks: [
  *        {
  *          user: 'U12341234',
- *          timestamp: '2020-03-14T13:37:02.000Z'
+ *          timestamp: '2020-03-14T13:37:02.000Z' // but in BSON date.
  *        },
  *        {
  *          user: 'U99991111',
- *          timestamp: '2020-03-14T13:37:03.000Z'
+ *          timestamp: '2020-03-14T13:37:03.000Z' // but in BSON date.
  *        }
  *      ]
  *    }
  *  }
  */
 
-// if we decide to use mongo the last answer on this page seems to be a neat way of exporting the connection from a module.
-// https://exceptionshub.com/how-to-connect-to-mongodb-synchronously-in-nodejs.html
+const databaseName = process.env.MONGO_DATABASE_NAME
+const collectionName = 'instances'
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      type: process.env.FIREBASE_CRED_TYPE,
-      project_id: process.env.FIREBASE_CRED_PROJECT_ID,
-      private_key_id: process.env.FIREBASE_CRED_PRIVATE_KEY_ID,
-      private_key: process.env.FIREBASE_CRED_PRIVATE_KEY,
-      client_email: process.env.FIREBASE_CRED_CLIENT_EMAIL,
-      client_id: process.env.FIREBASE_CRED_CLIENT_ID,
-      auth_uri: process.env.FIREBASE_CRED_AUTH_URI,
-      token_uri: process.env.FIREBASE_CRED_TOKEN_URI,
-      auth_provider_x509_cert_url: process.env.FIREBASE_CRED_AUTH_PROVIDER,
-      client_x509_cert_url: process.env.FIREBASE_CRED_X509
-    }),
-    databaseURL: process.env.FIREBASE_DATABASEURL
-  })
+if (!databaseName || !collectionName) {
+  throw new Error(`databaseName or collectionName is falsy! databaseName: ${databaseName}`)
 }
 
-const firestore = admin.firestore()
-
-const collectionName = 'instances'
+/**
+ * Helper function that returns the collection of instances.
+ */
+async function instanceCollection () {
+  const client = await mongo()
+  return client.db(databaseName).collection(collectionName)
+}
 
 module.exports = {
   clickData (uuid) {
@@ -91,12 +108,17 @@ module.exports = {
       scheduled: {}
     }
 
-    // now store it in database under a new random document id.
-    const doc = firestore.collection(collectionName).doc()
-    await doc.create(instanceData)
+    // now store it in database.
+    const collection = await instanceCollection()
+    const result = await collection.insertOne(instanceData)
+
+    console.debug(`Installed new instance with database id: ${result.insertedId}`)
 
     // TODO: if we already have an install on this team, what do we do?
-    // TODO: consider using Team ID as document key instead, and limit to one install per team.
+    // Suggestions: uniqueness constraint, or replace with update query that simply adds the person
+    // as an admin of the instance but retains all other options?
+
+    // XXX: look at the $setOnInsert which might be useful?
 
     // TODO: should this include the new randomly assigned id?
     return instanceData
@@ -108,12 +130,15 @@ module.exports = {
    * where the scheduled time has passed.
    */
   async instancesWithNoScheduledAnnounces () {
-    const now = DateTime.local().toUTC().toISO()
-    const nonNull = await firestore.collection(collectionName)
-      .where('channel', '>=', '')
-      .where('scheduled.timestamp', '<', now)
-      .get()
-    return nonNull.docs.map(d => d.data())
+    const now = DateTime.local().toUTC().toBSON()
+
+    const collection = await instanceCollection()
+    const cursor = collection.find({
+      channel: { $ne: null },
+      'scheduled.timestamp': { $lt: now }
+    })
+
+    return cursor.toArray()
   },
 
   /**
@@ -123,7 +148,10 @@ module.exports = {
    * already scheduled, it will not be returned.
    */
   async lastAnnounce (instanceRef) {
-    const instance = await firestore.collection(collectionName).doc(instanceRef).get()
+    const collection = await instanceCollection()
+    const instance = await collection.findOne({
+      'team.id': instanceRef
+    })
     const announces = Object.keys(instance.get('buttons'))
     announces.sort()
     return announces.pop()
@@ -140,7 +168,41 @@ module.exports = {
   async recordClick (instanceRef, uuid, user, time) {
     const instanceDocRef = firestore.collection(collectionName).doc(instanceRef)
 
-    // time is a Luxon DateTime object. We store it as a *UTC* timestamp in the database.
+    // we can probably use find and update functions instead of transactions, since the recordclick
+    // operation only operates on a single document.
+
+    // time is a Luxon DateTime object. We store it as a UTC timestamp in the database.
+    // It must be UTC so we can sort it using lexigraphical sort.
+    const timestamp = time.toUTC().toISO().toBSON()
+
+    const collection = await instanceCollection()
+    const instance = await collection.findOneAndUpdate({
+      'team.id': instanceRef,
+      [`buttons.${uuid}.clicks`]: {
+        // any of the following conditions should hold for all elements of the array to be allowed to update
+        $all: [ 
+            // the element is not related to this user.
+            { $elemMatch: { user: { $ne: user } } }, 
+            // the currently stored element is larger than this timestamp for this user.
+            { $elemMatch: { user: { $eq: user }, timestamp: { $gt: timestamp } } }, 
+        ]
+      },
+      // here comes the updates to apply to the document if the above matches.
+      {
+      })
+
+      // late nite thoughts: it seems like if write concern is >= 1 and we have "read primary something"
+      // we're guaranteed read-your-own-writes consistency which means we could probably "always" add
+      // an entry to the clicks array and then in a follow-up query filter possible duplicates out.
+      // or perhaps it is possible to write a query such that it updates an already existing entry in clicks
+      // if the user has already clicked, and the timestamp is earlier, and otherwise just insert it.
+      // sort of like an upsert but for an update of a single entry in an embedded document array.
+
+      // use an Aggregation Pipeline perhaps?
+
+
+
+    // time is a Luxon DateTime object. We store it as a UTC timestamp in the database.
     // It must be UTC so we can sort it using lexigraphical sort.
     const timestamp = time.toUTC().toISO()
 
@@ -207,16 +269,21 @@ module.exports = {
   },
 
   async storeScheduled (instanceRef, dateTime, messageId) {
-    // dateTime is a Luxon DateTime object. We store it as a *UTC* timestamp in the database.
-    // It must be UTC so we can sort it using lexigraphical sort.
-    const timestamp = dateTime.toUTC().toISO()
+    // dateTime is a Luxon DateTime object. We store it as a UTC BSON in the database.
+    const timestamp = dateTime.toUTC().toISO().toBSON()
+    const collection = await instanceCollection()
 
-    const instanceDocRef = firestore.collection(collectionName).doc(instanceRef)
-    await instanceDocRef.update({
-      scheduled: {
-        timestamp,
-        messageId
+    const result = await collection.updateOne({ 'team.id': instanceRef }, {
+      $set: {
+        scheduled: {
+          timestamp,
+          messageId
+        }
       }
     })
+
+    if (result.modifiedCount !== 1) {
+      throw new Error(`Failed to stored scheduled, nothing were matched in query! instanceRef: ${instanceRef}`)
+    }
   }
 }
