@@ -54,6 +54,7 @@ function connectMongo () {
  *    messageId: '',
  *  },
  *  buttons = {
+ *    version: 1, // used for optimistic concurrency control in certain cases.
  *    '2020-03-14T13:37:00.000Z': {
  *      clicks: [
  *        {
@@ -104,7 +105,9 @@ module.exports = {
       intervalStart: 32400, // 09:00
       intervalEnd: 57600, // 16:00
       timezone: 'Europe/Copenhagen',
-      buttons: {},
+      buttons: {
+        version: 1
+      },
       scheduled: {}
     }
 
@@ -166,51 +169,22 @@ module.exports = {
    * time should be a Luxon datetime object.
    */
   async recordClick (instanceRef, uuid, user, time) {
-    const instanceDocRef = firestore.collection(collectionName).doc(instanceRef)
-
-    // we can probably use find and update functions instead of transactions, since the recordclick
-    // operation only operates on a single document.
-
     // time is a Luxon DateTime object. We store it as a UTC timestamp in the database.
-    // It must be UTC so we can sort it using lexigraphical sort.
-    const timestamp = time.toUTC().toISO().toBSON()
+    const timestamp = time.toUTC().toBSON()
 
     const collection = await instanceCollection()
-    const instance = await collection.findOneAndUpdate({
-      'team.id': instanceRef,
-      [`buttons.${uuid}.clicks`]: {
-        // any of the following conditions should hold for all elements of the array to be allowed to update
-        $all: [ 
-            // the element is not related to this user.
-            { $elemMatch: { user: { $ne: user } } }, 
-            // the currently stored element is larger than this timestamp for this user.
-            { $elemMatch: { user: { $eq: user }, timestamp: { $gt: timestamp } } }, 
-        ]
-      },
-      // here comes the updates to apply to the document if the above matches.
-      {
+
+    // Optimistic concurrency control, we retry this if the version has changed for this
+    // particular instance since we started. We have a maximum number of tries the update
+    // can be performed. Currently (arbitrarily) chosen to be 100. Will throw if exceeded.
+    const MAX_RETRIES = 100
+    for (let retries = 0; retries < MAX_RETRIES; retries++) {
+      const instance = await collection.findOne({
+        'team.id': instanceRef
       })
 
-      // late nite thoughts: it seems like if write concern is >= 1 and we have "read primary something"
-      // we're guaranteed read-your-own-writes consistency which means we could probably "always" add
-      // an entry to the clicks array and then in a follow-up query filter possible duplicates out.
-      // or perhaps it is possible to write a query such that it updates an already existing entry in clicks
-      // if the user has already clicked, and the timestamp is earlier, and otherwise just insert it.
-      // sort of like an upsert but for an update of a single entry in an embedded document array.
-
-      // use an Aggregation Pipeline perhaps?
-
-
-
-    // time is a Luxon DateTime object. We store it as a UTC timestamp in the database.
-    // It must be UTC so we can sort it using lexigraphical sort.
-    const timestamp = time.toUTC().toISO()
-
-    return firestore.runTransaction(async transaction => {
-      const instance = await transaction.get(instanceDocRef)
       let first = false
-
-      const buttons = instance.data().buttons
+      const buttons = instance.buttons
 
       if (!Object.prototype.hasOwnProperty.call(buttons, uuid) ||
           !Object.prototype.hasOwnProperty.call(buttons[uuid], 'clicks')) {
@@ -234,7 +208,8 @@ module.exports = {
       // duplicate clicks by the same user.
       buttons[uuid].clicks.sort((a, b) => a.timestamp.localeCompare(b.timestamp))
 
-      const firstClickTimestamp = DateTime.fromISO(buttons[uuid].clicks[0].timestamp)
+      const zone = instance.timezone
+      const firstClickTimestamp = DateTime.fromJSDate(buttons[uuid].clicks[0].timestamp, { zone })
 
       const seen = new Set()
       const clicks = []
@@ -243,7 +218,7 @@ module.exports = {
         // and is within the runner up time.
         if (!seen.has(click.user)) {
           const runnerUpWindow = parseInt(process.env.RUNNER_UP_WINDOW) || 2000
-          const clickTimestamp = DateTime.fromISO(click.timestamp)
+          const clickTimestamp = DateTime.fromJSDate(click.timestamp, { zone })
           if (clickTimestamp.diff(firstClickTimestamp) <= runnerUpWindow) {
             // Finally something that was valid.
             clicks.push(click)
@@ -253,12 +228,30 @@ module.exports = {
       }
       buttons[uuid].clicks = clicks
 
-      transaction.update(instanceDocRef, {
-        buttons
+      // We have now fixed this array up, now try to update the object which should suceed unless
+      // someone has made changes in the meantime. If that's the case, we will retry the operation.
+      console.debug(`Trying to update ${instanceRef} version ${buttons.version} on try ${retries}`)
+      const result = await collection.findOneAndUpdate({
+        _id: instance._id,
+        'buttons.version': buttons.version
+      }, {
+        $set: {
+          [`buttons.${uuid}`]: buttons[uuid]
+        },
+        $inc: {
+          'buttons.version': 1
+        }
+      }, {
+        returnOriginal: false
       })
 
-      return first
-    })
+      if (result.value !== null) {
+        console.debug(`Successfully wrote ${instanceRef} version ${result.value.buttons.version} on try ${retries}`)
+        return first
+      }
+    }
+
+    throw new Error(`Failed to successfully record click even though ${MAX_RETRIES} were done.`)
   },
   recentClickTimes () { throw new Error('not implemented') },
   slowestClickTimes () { throw new Error('not implemented') },
