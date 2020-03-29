@@ -4,26 +4,42 @@ const { DateTime } = require('luxon')
 
 // We introduce a singleton object that maintains the connection to the database.
 // This module will always return a Promise that resolves to such an instance.
+// The object contains the client, databaseName, and collectionName
 let dbReference = null
 
 const mongo = () => dbReference ? Promise.resolve(dbReference) : connectMongo()
 
 // We call this function to prepare a connection to the database as soon as this
 // module is loaded.
-mongo()
+// mongo()
 
 // Function that stores reference to db as soon as connection is established.
 function connectMongo () {
   return new Promise((resolve, reject) => {
-    console.log('Connecting to Mongo...')
-    MongoClient.connect(process.env.MONGO_URL, { useNewUrlParser: true }, (err, db) => {
+    const databaseName = process.env.MONGO_DATABASE_NAME
+    const collectionName = 'instances'
+
+    if (!databaseName || !collectionName) {
+      throw new Error(`databaseName or collectionName is falsy! databaseName: ${databaseName}`)
+    }
+
+    console.debug('Connecting to Mongo...')
+    MongoClient.connect(process.env.MONGO_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    },
+    (err, db) => {
       if (err) {
         dbReference = null
         return reject(err)
       } else {
-        console.log('Connected to Mongo...')
-        dbReference = db
-        resolve(db)
+        console.debug('Connected to Mongo...')
+        dbReference = {
+          client: db,
+          collectionName,
+          databaseName
+        }
+        resolve(dbReference)
       }
     })
   })
@@ -70,18 +86,11 @@ function connectMongo () {
  *  }
  */
 
-const databaseName = process.env.MONGO_DATABASE_NAME
-const collectionName = 'instances'
-
-if (!databaseName || !collectionName) {
-  throw new Error(`databaseName or collectionName is falsy! databaseName: ${databaseName}`)
-}
-
 /**
  * Helper function that returns the collection of instances.
  */
 async function instanceCollection () {
-  const client = await mongo()
+  const { client, databaseName, collectionName } = await mongo()
   return client.db(databaseName).collection(collectionName)
 }
 
@@ -278,5 +287,11 @@ module.exports = {
     if (result.modifiedCount !== 1) {
       throw new Error(`Failed to stored scheduled, nothing were matched in query! instanceRef: ${instanceRef}`)
     }
-  }
+  },
+
+  /**
+   * Exports for unit testing only. If you are not a unit test, then leave them alone, mkay?
+   */
+  _instanceCollection: instanceCollection,
+  _mongo: mongo
 }
