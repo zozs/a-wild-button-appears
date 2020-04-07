@@ -49,24 +49,24 @@ function connectMongo () {
  * Instance schema:
  *
  *  accessToken = '',
- *  team = {,
+ *  team = {
  *    id: '',
  *    name: '',
  *  },
  *  channel = '',
  *  manualAnnounce = false,
  *  weekdays = 0,
- *  intervalStart = 32400 // 09:00,
- *  intervalEnd = 57600 // 16:00,
+ *  intervalStart = 32400, // 09:00
+ *  intervalEnd = 57600, // 16:00
  *  timezone = 'Europe/Copenhagen',
  *  scope = '',
  *  botUserId = '',
  *  appId = '',
- *  authedUser = {,
+ *  authedUser = {
  *    id: '',
  *  },
- *  scheduled = {,
- *    timestamp: '1982-05-25T00:00:00.000Z' // but this is stored as a BSON datetime type.
+ *  scheduled = {
+ *    timestamp: '1982-05-25T00:00:00.000Z', // but this is stored as a BSON datetime type.
  *    messageId: '',
  *  },
  *  buttons = {
@@ -147,7 +147,10 @@ module.exports = {
     const collection = await instanceCollection()
     const cursor = collection.find({
       channel: { $ne: null },
-      'scheduled.timestamp': { $lt: now }
+      $or: [
+        { 'scheduled.timestamp': { $exists: false } },
+        { 'scheduled.timestamp': { $lt: now } }
+      ]
     })
 
     return cursor.toArray()
