@@ -29,7 +29,7 @@ afterAll(async () => {
 })
 
 // silence console.debug
-//console.debug = jest.fn()
+console.debug = jest.fn()
 
 const db = require('./db')
 const { Instance } = require('./instance')
@@ -75,7 +75,8 @@ describe('database', () => {
       expect(instances[0]).toHaveProperty('intervalStart')
       expect(instances[0]).toHaveProperty('intervalEnd')
       expect(instances[0]).toHaveProperty('timezone')
-      expect(instances[0]).toHaveProperty('buttons.version', 1)
+      expect(instances[0]).toHaveProperty('buttonsVersion', 1)
+      expect(instances[0]).toHaveProperty('buttons', [])
       expect(instances[0]).toHaveProperty('scheduled', {})
     })
 
@@ -116,7 +117,7 @@ describe('database', () => {
         authedUser: {
           id: 'U9'
         },
-        buttons: {}
+        buttons: []
       }
 
       await collection.insertMany([{
@@ -235,7 +236,7 @@ describe('database', () => {
         authedUser: {
           id: 'U9'
         },
-        buttons: {}
+        buttons: []
       }
 
       await collection.insertMany([{
@@ -301,9 +302,8 @@ describe('database', () => {
         },
         channel: null,
         scheduled: {},
-        buttons: {
-          version: 1
-        }
+        buttonsVersion: 1,
+        buttons: []
       }])
     })
 
@@ -324,15 +324,280 @@ describe('database', () => {
       })
       expect(instance).not.toEqual(undefined)
       expect(instance.buttons).not.toEqual(undefined)
-      expect(instance.buttons).toEqual(expect.objectContaining({
-        version: 2,
-        '2020-04-04T18:39:37.123Z': {
-          clicks: [{
-            user: 'U1337',
-            timestamp: time
+      expect(instance.buttonsVersion).toEqual(2)
+      expect(instance.buttons).toEqual([{
+        uuid: '2020-04-04T18:39:37.123Z',
+        clicks: [{
+          user: 'U1337',
+          timestamp: time.toJSDate()
+        }]
+      }])
+    })
+
+    test('uuid does exist, but no clicks array', async () => {
+      const instanceRef = 'T1'
+      const uuid = '2020-04-04T18:39:37.123Z'
+
+      const collection = await db._instanceCollection()
+      await collection.updateOne({ 'team.id': instanceRef }, {
+        $set: {
+          buttons: [{
+            uuid
           }]
         }
-      }))
+      })
+
+      const user = 'U1337'
+      const time = DateTime.local()
+      const first = await db.recordClick(instanceRef, uuid, user, time)
+
+      expect(first).toEqual(true)
+
+      const instance = await collection.findOne({
+        'team.id': instanceRef
+      })
+      expect(instance).not.toEqual(undefined)
+      expect(instance.buttons).not.toEqual(undefined)
+      expect(instance.buttonsVersion).toEqual(2)
+      expect(instance.buttons).toEqual([{
+        uuid: '2020-04-04T18:39:37.123Z',
+        clicks: [{
+          user: 'U1337',
+          timestamp: time.toJSDate()
+        }]
+      }])
+    })
+
+    test('uuid does exist, but empty clicks array', async () => {
+      const instanceRef = 'T1'
+      const uuid = '2020-04-04T18:39:37.123Z'
+
+      const collection = await db._instanceCollection()
+      await collection.updateOne({ 'team.id': instanceRef }, {
+        $set: {
+          buttons: [{
+            clicks: [],
+            uuid
+          }]
+        }
+      })
+
+      const user = 'U1337'
+      const time = DateTime.local()
+      const first = await db.recordClick(instanceRef, uuid, user, time)
+
+      expect(first).toEqual(true)
+
+      const instance = await collection.findOne({
+        'team.id': instanceRef
+      })
+      expect(instance).not.toEqual(undefined)
+      expect(instance.buttons).not.toEqual(undefined)
+      expect(instance.buttonsVersion).toEqual(2)
+      expect(instance.buttons).toEqual([{
+        uuid: '2020-04-04T18:39:37.123Z',
+        clicks: [{
+          user: 'U1337',
+          timestamp: time.toJSDate()
+        }]
+      }])
+    })
+
+    test('runner up outside range not added, same user', async () => {
+      const instanceRef = 'T1'
+      const uuid = '2020-04-04T18:39:37.123Z'
+      const user = 'U1337'
+      const time = DateTime.local()
+
+      const first = await db.recordClick(instanceRef, uuid, user, time)
+      const second = await db.recordClick(instanceRef, uuid, user, time.plus(2001)) // too slow
+      expect(first).toEqual(true)
+      expect(second).toEqual(false)
+
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': instanceRef
+      })
+
+      expect(instance.buttonsVersion).toEqual(3)
+      expect(instance.buttons).toEqual([{
+        uuid: '2020-04-04T18:39:37.123Z',
+        clicks: [{
+          user: 'U1337',
+          timestamp: time.toJSDate()
+        }]
+      }])
+    })
+
+    test('duplicate timestamp is not accepted for same user', async () => {
+      const instanceRef = 'T1'
+      const uuid = '2020-04-04T18:39:37.123Z'
+      const user = 'U1337'
+      const time = DateTime.local()
+
+      const first = await db.recordClick(instanceRef, uuid, user, time)
+      const second = await db.recordClick(instanceRef, uuid, user, time)
+      expect(first).toEqual(true)
+      expect(second).toEqual(false)
+
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': instanceRef
+      })
+
+      expect(instance.buttonsVersion).toEqual(3)
+      expect(instance.buttons).toEqual([{
+        uuid: '2020-04-04T18:39:37.123Z',
+        clicks: [{
+          user: 'U1337',
+          timestamp: time.toJSDate()
+        }]
+      }])
+    })
+
+    test('runner up outside range not added, same user, wrong order', async () => {
+      const instanceRef = 'T1'
+      const uuid = '2020-04-04T18:39:37.123Z'
+      const user = 'U1337'
+      const time = DateTime.local()
+
+      const first = await db.recordClick(instanceRef, uuid, user, time.plus(2001)) // too slow
+      const second = await db.recordClick(instanceRef, uuid, user, time) // but wont notice until here
+      expect(first).toEqual(true)
+      expect(second).toEqual(false)
+
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': instanceRef
+      })
+
+      expect(instance.buttonsVersion).toEqual(3)
+      expect(instance.buttons).toEqual([{
+        uuid: '2020-04-04T18:39:37.123Z',
+        clicks: [{
+          user: 'U1337',
+          timestamp: time.toJSDate()
+        }]
+      }])
+    })
+
+    test('runner up outside range not added, different user', async () => {
+      const instanceRef = 'T1'
+      const uuid = '2020-04-04T18:39:37.123Z'
+      const user1 = 'U1337'
+      const user2 = 'U1338'
+      const time = DateTime.local()
+
+      const first = await db.recordClick(instanceRef, uuid, user2, time.plus(2001)) // too slow
+      const second = await db.recordClick(instanceRef, uuid, user1, time) // but wont notice until here.
+      expect(first).toEqual(true)
+      expect(second).toEqual(false)
+
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': instanceRef
+      })
+
+      expect(instance.buttonsVersion).toEqual(3) // will still write.
+      expect(instance.buttons).toEqual([{
+        uuid: '2020-04-04T18:39:37.123Z',
+        clicks: [{
+          user: 'U1337',
+          timestamp: time.toJSDate()
+        }]
+      }])
+    })
+
+    test('different users are all added and sorted', async () => {
+      const instanceRef = 'T1'
+      const uuid = '2020-04-04T18:39:37.123Z'
+      const time = DateTime.local()
+      const newClicks = [
+        {
+          user: 'U12',
+          time: time.plus(1000)
+        },
+        {
+          user: 'U10',
+          time
+        },
+        {
+          user: 'U11',
+          time: time.plus(100)
+        }
+      ]
+
+      const first = await db.recordClick(instanceRef, uuid, newClicks[0].user, newClicks[0].time)
+      const second = await db.recordClick(instanceRef, uuid, newClicks[1].user, newClicks[1].time)
+      const third = await db.recordClick(instanceRef, uuid, newClicks[2].user, newClicks[2].time)
+
+      expect(first).toEqual(true)
+      expect(second).toEqual(false)
+      expect(third).toEqual(false)
+
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': instanceRef
+      })
+      expect(instance).not.toEqual(undefined)
+      expect(instance.buttons).not.toEqual(undefined)
+      expect(instance.buttonsVersion).toEqual(4)
+      expect(instance.buttons).toEqual([{
+        uuid: '2020-04-04T18:39:37.123Z',
+        clicks: [
+          {
+            user: 'U10',
+            timestamp: newClicks[1].time.toJSDate()
+          },
+          {
+            user: 'U11',
+            timestamp: newClicks[2].time.toJSDate()
+          },
+          {
+            user: 'U12',
+            timestamp: newClicks[0].time.toJSDate()
+          }
+        ]
+      }])
+    })
+
+    test('that optimistic concurrency control works for same button', async () => {
+      const instanceRef = 'T1'
+      const uuid = '2020-04-04T18:39:37.123Z'
+      const user1 = 'U100'
+      const user2 = 'U200'
+      const time = DateTime.local()
+
+      let callbackExecuted = false
+      let second
+      const first = await db.recordClick(instanceRef, uuid, user1, time, async () => {
+        if (!callbackExecuted) {
+          second = await db.recordClick(instanceRef, uuid, user2, time.plus(100))
+        }
+        callbackExecuted = true
+      })
+      expect(first).toEqual(false)
+      expect(second).toEqual(true)
+
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': instanceRef
+      })
+
+      expect(instance.buttonsVersion).toEqual(3)
+      expect(instance.buttons).toEqual([{
+        uuid: '2020-04-04T18:39:37.123Z',
+        clicks: [
+          {
+            user: 'U100',
+            timestamp: time.toJSDate()
+          },
+          {
+            user: 'U200',
+            timestamp: (time.plus(100)).toJSDate()
+          }
+        ]
+      }])
     })
   })
 })

@@ -2,3 +2,4 @@ node_modules/
 /.env*
 wildstats.json
 /wildbutton-firebase*json
+/coverage/

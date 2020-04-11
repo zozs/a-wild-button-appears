@@ -25,7 +25,8 @@
     "uuid": "^7.0.2"
   },
   "scripts": {
-    "test": "jest && standard"
+    "test": "jest && standard",
+    "coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",

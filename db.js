@@ -69,9 +69,10 @@ function connectMongo () {
  *    timestamp: '1982-05-25T00:00:00.000Z', // but this is stored as a BSON datetime type.
  *    messageId: '',
  *  },
- *  buttons = {
- *    version: 1, // used for optimistic concurrency control in certain cases.
- *    '2020-03-14T13:37:00.000Z': {
+ *  buttonsVersion: 1, // used for optimistic concurrency control in certain cases.
+ *  buttons: [
+ *    {
+ *      uuid: '2020-03-14T13:37:00.000Z',
  *      clicks: [
  *        {
  *          user: 'U12341234',
@@ -83,7 +84,7 @@ function connectMongo () {
  *        }
  *      ]
  *    }
- *  }
+ *  ]
  */
 
 /**
@@ -114,9 +115,8 @@ module.exports = {
       intervalStart: 32400, // 09:00
       intervalEnd: 57600, // 16:00
       timezone: 'Europe/Copenhagen',
-      buttons: {
-        version: 1
-      },
+      buttonsVersion: 1,
+      buttons: [],
       scheduled: {}
     }
 
@@ -167,7 +167,7 @@ module.exports = {
     const instance = await collection.findOne({
       'team.id': instanceRef
     })
-    const announces = Object.keys(instance.get('buttons'))
+    const announces = instance.buttons.map(e => e.uuid) // TODO: can probably be done in Mongo directly?
     announces.sort()
     return announces.pop()
   },
@@ -179,8 +179,9 @@ module.exports = {
    *
    * user should be a Slack user-id string.
    * time should be a Luxon datetime object.
+   * _rendezvous should be an async callback function, only used to synchronize unit tests.
    */
-  async recordClick (instanceRef, uuid, user, time) {
+  async recordClick (instanceRef, uuid, user, time, _rendezvous = undefined) {
     // time is a Luxon DateTime object. We store it as a UTC timestamp in the database.
     const timestamp = time.toUTC().toBSON()
 
@@ -196,21 +197,25 @@ module.exports = {
       })
 
       let first = false
-      const buttons = instance.buttons
 
-      if (!Object.prototype.hasOwnProperty.call(buttons, uuid) ||
-          !Object.prototype.hasOwnProperty.call(buttons[uuid], 'clicks')) {
-        buttons[uuid] = {
-          clicks: []
-        }
+      // First see if we can find our particular uuid in the array.
+      let button = instance.buttons.find(e => e.uuid === uuid)
+      if (button === undefined) {
+        first = true
+        button = { uuid }
+        instance.buttons.push(button)
+      }
+
+      if (!Object.prototype.hasOwnProperty.call(button, 'clicks')) {
+        first = true
+        button.clicks = []
+      }
+
+      if (button.clicks.length === 0) {
         first = true
       }
 
-      if (buttons[uuid].clicks.length === 0) {
-        first = true
-      }
-
-      buttons[uuid].clicks.push({
+      button.clicks.push({
         user,
         timestamp
       })
@@ -218,14 +223,14 @@ module.exports = {
       // Check for duplicate users, and check that time isn't larger than runner up.
       // To this by sorting by click time, and filter out clicks that are too slow or
       // duplicate clicks by the same user.
-      buttons[uuid].clicks.sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+      button.clicks.sort((a, b) => a.timestamp.valueOf() - b.timestamp.valueOf())
 
       const zone = instance.timezone
-      const firstClickTimestamp = DateTime.fromJSDate(buttons[uuid].clicks[0].timestamp, { zone })
+      const firstClickTimestamp = DateTime.fromJSDate(button.clicks[0].timestamp, { zone })
 
       const seen = new Set()
       const clicks = []
-      for (const click of buttons[uuid].clicks) {
+      for (const click of button.clicks) {
         // The firstClick will be implicitly included since it hasn't been seen before
         // and is within the runner up time.
         if (!seen.has(click.user)) {
@@ -238,32 +243,39 @@ module.exports = {
           }
         }
       }
-      buttons[uuid].clicks = clicks
+      button.clicks = clicks
 
       // We have now fixed this array up, now try to update the object which should suceed unless
       // someone has made changes in the meantime. If that's the case, we will retry the operation.
-      console.debug(`Trying to update ${instanceRef} version ${buttons.version} on try ${retries}`)
+      console.debug(`Trying to update ${instanceRef} version ${instance.buttonsVersion} on try ${retries}`)
+
+      // Call rendezvous function if defined, used only in unit tests to synchronize tests that
+      // tests the retry mechanism.
+      if (_rendezvous !== undefined) {
+        await _rendezvous()
+      }
+
       const result = await collection.findOneAndUpdate({
         _id: instance._id,
-        'buttons.version': buttons.version
+        buttonsVersion: instance.buttonsVersion
       }, {
         $set: {
-          [`buttons.${uuid}`]: buttons[uuid]
+          buttons: instance.buttons
         },
         $inc: {
-          'buttons.version': 1
+          buttonsVersion: 1
         }
       }, {
         returnOriginal: false
       })
 
       if (result.value !== null) {
-        console.debug(`Successfully wrote ${instanceRef} version ${result.value.buttons.version} on try ${retries}`)
+        console.debug(`Successfully wrote ${instanceRef} version ${result.value.buttonsVersion} on try ${retries}`)
         return first
       }
     }
 
-    throw new Error(`Failed to successfully record click even though ${MAX_RETRIES} were done.`)
+    throw new Error(`Failed to successfully record click even though ${MAX_RETRIES} tries were done.`)
   },
   recentClickTimes () { throw new Error('not implemented') },
   slowestClickTimes () { throw new Error('not implemented') },
