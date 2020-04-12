@@ -299,7 +299,7 @@ module.exports = {
 
   async storeScheduled (instanceRef, dateTime, messageId) {
     // dateTime is a Luxon DateTime object. We store it as a UTC BSON in the database.
-    const timestamp = dateTime.toUTC().toISO().toBSON()
+    const timestamp = dateTime.toUTC().toBSON()
     const collection = await instanceCollection()
 
     const result = await collection.updateOne({ 'team.id': instanceRef }, {

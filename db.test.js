@@ -704,4 +704,81 @@ describe('database', () => {
       }])
     })
   })
+
+  describe('storeScheduled', () => {
+    beforeEach(async () => {
+      // add example instance.
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      const sharedProperties = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        channel: null,
+        buttonsVersion: 1,
+        buttons: []
+      }
+
+      collection.insertMany([{
+        ...sharedProperties,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        scheduled: {}
+      }, {
+        ...sharedProperties,
+        team: {
+          id: 'T2',
+          name: 'Team2'
+        },
+        scheduled: {
+          timestamp: DateTime.fromISO('2020-04-12T13:22:00.000Z').toUTC().toBSON(),
+          messageId: 'before'
+        }
+      }])
+    })
+
+    test('update existing schedule', async () => {
+      const messageId = 'after'
+      const timestamp = DateTime.local()
+      await db.storeScheduled('T2', timestamp, messageId)
+
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T2'
+      })
+
+      expect(instance.scheduled).toEqual({
+        timestamp: timestamp.toJSDate(),
+        messageId
+      })
+    })
+
+    test('set new schedule', async () => {
+      const messageId = 'after'
+      const timestamp = DateTime.local()
+      await db.storeScheduled('T1', timestamp, messageId)
+
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T1'
+      })
+
+      expect(instance.scheduled).toEqual({
+        timestamp: timestamp.toJSDate(),
+        messageId
+      })
+    })
+  })
 })
