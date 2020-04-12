@@ -291,11 +291,6 @@ module.exports = {
   },
   recentClickTimes () { throw new Error('not implemented') },
   slowestClickTimes () { throw new Error('not implemented') },
-  async signingSecret (team) {
-    // Turns out the signing secret is not unique per user, so we really should remove it
-    // from the database file sometime in the future.
-    return process.env.SLACK_SIGNING_SECRET
-  },
 
   async storeScheduled (instanceRef, dateTime, messageId) {
     // dateTime is a Luxon DateTime object. We store it as a UTC BSON in the database.

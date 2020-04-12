@@ -1,6 +1,6 @@
 const express = require('express')
 
-function slackExtractSignedData (signingSecret) {
+function slackExtractSignedData () {
   return (req, res, buf, encoding) => {
     const body = buf.toString(encoding || 'utf8')
     const requestSignature = req.get('X-Slack-Signature')

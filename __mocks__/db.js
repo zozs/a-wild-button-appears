@@ -41,7 +41,6 @@ module.exports = {
         // id: 0,
         name: 'test instance',
         accessToken: 'xoxp-1234',
-        signingSecret: 'TESTtoken',
         team: {
           id: 'T00000000',
           name: 'testteam'
@@ -61,8 +60,5 @@ module.exports = {
     return true
   }),
   recentClickTimes () { return [] },
-  slowestClickTimes () { return [] },
-  async signingSecret (team) {
-    return `SIGNINGSECRET_${team}`
-  }
+  slowestClickTimes () { return [] }
 }
