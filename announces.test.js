@@ -31,7 +31,7 @@ expect.extend({
   }
 })
 
-// last announce in mock db is '2020-01-02T12:34:56'
+// last announce in mock db is '2020-01-02T12:34:56' unless overridden.
 const testInstance = new Instance()
 
 describe('own defined range expect extension works when', () => {
@@ -178,5 +178,19 @@ describe('next announce', () => {
 
     const next = nextAnnounce(instance, now)
     await expect(next).rejects.toThrow()
+  })
+
+  test('when no announce has ever been made before', async () => {
+    const instance = { ...testInstance }
+    const zone = testInstance.timezone
+
+    db.lastAnnounce.mockImplementationOnce(async (instanceRef, now) => null)
+
+    const now = DateTime.fromISO('2020-01-02T21:00:00', { zone })
+    const intervalLow = DateTime.fromISO('2020-01-03T09:00:00', { zone })
+    const intervalHigh = DateTime.fromISO('2020-01-03T16:00:00', { zone })
+
+    const next = await nextAnnounce(instance, now)
+    expect(next).toBeWithinRange(intervalLow, intervalHigh)
   })
 })

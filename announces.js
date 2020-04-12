@@ -30,8 +30,13 @@ async function nextAnnounce (instance, localNow) {
   const zone = instance.timezone
   const now = localNow.setZone(zone)
 
-  const lastAnnounceTimestamp = await db.lastAnnounce(instanceRef)
-  const lastAnnounce = DateTime.fromISO(lastAnnounceTimestamp, { zone })
+  let lastAnnounce = await db.lastAnnounce(instanceRef, now)
+  if (lastAnnounce === null) {
+    // if we have never announced a button before, set last announce to beginning of epoch
+    // so it doesn't affect our calculations later on.
+    lastAnnounce = DateTime.fromMillis(0)
+  }
+  lastAnnounce = lastAnnounce.setZone(zone)
 
   // start with the assumption that we can announce a button today at 00:00:00.
   let newAnnounce = now.startOf('day')

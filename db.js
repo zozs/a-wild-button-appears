@@ -65,14 +65,14 @@ function connectMongo () {
  *  authedUser = {
  *    id: '',
  *  },
- *  scheduled = {
+ *  scheduled: {
  *    timestamp: '1982-05-25T00:00:00.000Z', // but this is stored as a BSON datetime type.
  *    messageId: '',
  *  },
  *  buttonsVersion: 1, // used for optimistic concurrency control in certain cases.
  *  buttons: [
  *    {
- *      uuid: '2020-03-14T13:37:00.000Z',
+ *      uuid: '2020-03-14T13:37:00.000Z', // stored as a string
  *      clicks: [
  *        {
  *          user: 'U12341234',
@@ -157,19 +157,31 @@ module.exports = {
   },
 
   /**
-   * Returns the timestamp of the last performed announce, as a ISO 8601-string.
+   * Returns the timestamp of the last performed announce, as a Luxon DateTime object.
+   * now is the current time as a Luxon DateTime object.
    *
    * Important! Note that this only returns the last _performed_ announce, if a new announce is
-   * already scheduled, it will not be returned.
+   * already scheduled, it will not be returned. It will, however, return a scheduled instance
+   * _if_ the time for it has passed, even though it hasn't received any clicks yet.
    */
-  async lastAnnounce (instanceRef) {
+  async lastAnnounce (instanceRef, now) {
     const collection = await instanceCollection()
     const instance = await collection.findOne({
       'team.id': instanceRef
     })
-    const announces = instance.buttons.map(e => e.uuid) // TODO: can probably be done in Mongo directly?
+    const announces = instance.buttons.map(e => DateTime.fromISO(e.uuid).toUTC())
+    if (instance.scheduled.timestamp !== undefined) {
+      const scheduledTimestamp = DateTime.fromJSDate(instance.scheduled.timestamp).toUTC()
+      if (scheduledTimestamp <= now) {
+        announces.push(scheduledTimestamp)
+      }
+    }
     announces.sort()
-    return announces.pop()
+    if (announces.length > 0) {
+      return DateTime.fromISO(announces.pop())
+    } else {
+      return null
+    }
   },
 
   /**

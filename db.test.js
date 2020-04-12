@@ -227,6 +227,7 @@ describe('database', () => {
         accessToken: 'xoxop-134234234',
         manualAnnounce: false,
         weekdays: 0,
+        channel: 'C1',
         intervalStart: 32400,
         intervalEnd: 57600,
         timezone: 'Europe/Copenhagen',
@@ -235,45 +236,109 @@ describe('database', () => {
         appId: 'A1',
         authedUser: {
           id: 'U9'
-        },
-        buttons: []
+        }
       }
 
-      await collection.insertMany([{
+      await collection.insertMany([{ // no scheduled time, but buttons.
         ...sharedProperties,
         team: {
           id: 'T1',
           name: 'Team1'
         },
-        channel: null,
-        scheduled: {
-          timestamp: DateTime.fromISO('1999-05-25T00:00:00.000Z').toUTC().toBSON(), // this time has definitively passed.
-          messageId: ''
-        }
-      }, {
+        scheduled: {},
+        buttons: [
+          {
+            uuid: '2020-04-06T14:39:37.123Z',
+            clicks: [{
+              user: 'U1',
+              timestamp: DateTime.local().toJSDate()
+            }]
+          },
+          {
+            uuid: '2020-04-04T18:39:37.123Z',
+            clicks: [{
+              user: 'U1',
+              timestamp: DateTime.local().toJSDate()
+            }]
+          }
+        ]
+      }, { // scheduled time after all buttons.
         ...sharedProperties,
         team: {
           id: 'T2',
           name: 'Team2'
         },
-        channel: 'C2',
         scheduled: {
-          timestamp: DateTime.fromISO('1999-05-25T00:00:00.000Z').toUTC().toBSON(), // this time has definitively passed.
+          timestamp: DateTime.fromISO('2020-05-25T00:00:00.000Z').toUTC().toBSON(),
           messageId: ''
-        }
-      }, {
+        },
+        buttons: [
+          {
+            uuid: '2020-04-04T18:39:37.123Z',
+            clicks: [{
+              user: 'U1',
+              timestamp: DateTime.local().toJSDate()
+            }]
+          },
+          {
+            uuid: '2020-05-24T14:39:37.123Z',
+            clicks: [{
+              user: 'U1',
+              timestamp: DateTime.local().toJSDate()
+            }]
+          }
+        ]
+      }, { // scheduled time, no buttons.
+        ...sharedProperties,
+        team: {
+          id: 'T3',
+          name: 'Team3'
+        },
+        scheduled: {
+          timestamp: DateTime.fromISO('2020-05-25T00:00:00.000Z').toUTC().toBSON(),
+          messageId: ''
+        },
+        buttons: []
+      }, { // no scheduled time, no buttons.
         ...sharedProperties,
         team: {
           id: 'T4',
           name: 'Team4'
         },
-        channel: 'C4',
-        scheduled: {} // no scheduled time.
+        scheduled: {},
+        buttonsVersion: 1,
+        buttons: []
       }])
     })
 
-    test.skip('to be implemented', async () => {
+    test('no scheduled time, but buttons', async () => {
+      const announce = await db.lastAnnounce('T1', DateTime.local())
+      expect(+announce).toEqual(+DateTime.fromISO('2020-04-06T14:39:37.123Z'))
+    })
 
+    test('scheduled time after all buttons, current time after scheduled', async () => {
+      const announce = await db.lastAnnounce('T2', DateTime.fromISO('2020-05-25T02:01:03.000+02:00'))
+      expect(+announce).toEqual(+DateTime.fromISO('2020-05-25T00:00:00.000Z'))
+    })
+
+    test('scheduled time after all buttons, current time before scheduled.', async () => {
+      const announce = await db.lastAnnounce('T2', DateTime.fromISO('2020-05-24T21:00:00.000Z'))
+      expect(+announce).toEqual(+DateTime.fromISO('2020-05-24T14:39:37.123Z'))
+    })
+
+    test('no scheduled time, no buttons', async () => {
+      const announce = await db.lastAnnounce('T4', DateTime.local())
+      expect(announce).toEqual(null)
+    })
+
+    test('scheduled time, no buttons, current time before scheduled', async () => {
+      const announce = await db.lastAnnounce('T3', DateTime.fromISO('2020-05-24T21:00:00.000Z'))
+      expect(announce).toEqual(null)
+    })
+
+    test('scheduled time, no buttons, current time after scheduled', async () => {
+      const announce = await db.lastAnnounce('T3', DateTime.fromISO('2020-05-25T02:01:03.000+02:00'))
+      expect(+announce).toEqual(+DateTime.fromISO('2020-05-25T00:00:00.000Z'))
     })
   })
 
@@ -559,6 +624,45 @@ describe('database', () => {
           }
         ]
       }])
+    })
+
+    test('two different buttons works', async () => {
+      // this should both mean that the return value is true since we're first, and
+      // that the new uuid together with the timestamp info is added to db.
+      const instanceRef = 'T1'
+      const uuid1 = '2020-04-04T18:39:37.123Z'
+      const uuid2 = '2020-04-11T19:15:45.641Z'
+      const user = 'U1337'
+      const time = DateTime.local()
+      const first = await db.recordClick(instanceRef, uuid1, user, time)
+      const second = await db.recordClick(instanceRef, uuid2, user, time)
+
+      expect(first).toEqual(true)
+      expect(second).toEqual(true)
+
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': instanceRef
+      })
+      expect(instance).not.toEqual(undefined)
+      expect(instance.buttons).not.toEqual(undefined)
+      expect(instance.buttonsVersion).toEqual(3)
+      expect(instance.buttons).toEqual([
+        {
+          uuid: uuid1,
+          clicks: [{
+            user,
+            timestamp: time.toJSDate()
+          }]
+        },
+        {
+          uuid: uuid2,
+          clicks: [{
+            user,
+            timestamp: time.toJSDate()
+          }]
+        }
+      ])
     })
 
     test('that optimistic concurrency control works for same button', async () => {

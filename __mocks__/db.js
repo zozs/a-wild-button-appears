@@ -1,5 +1,7 @@
 /* global jest */
 
+const { DateTime } = require('luxon')
+
 module.exports = {
   clickData (uuid) {
     return {
@@ -54,9 +56,7 @@ module.exports = {
     ]
   },
   storeScheduled: jest.fn(async (instanceRef, timestamp, messageId) => {}),
-  lastAnnounce (instanceRef) {
-    return '2020-01-02T12:34:56'
-  },
+  lastAnnounce: jest.fn(async (instanceRef, now) => DateTime.fromISO('2020-01-02T12:34:56.000Z').toUTC()),
   recordClick: jest.fn(async (instanceRef, uuid, user, time) => {
     return true
   }),
