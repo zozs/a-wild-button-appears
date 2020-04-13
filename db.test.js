@@ -70,7 +70,7 @@ describe('database', () => {
 
       expect(instances[0]).toHaveProperty('_id')
       expect(instances[0]).toHaveProperty('channel', null)
-      expect(instances[0]).toHaveProperty('manualAnnouncement')
+      expect(instances[0]).toHaveProperty('manualAnnounce')
       expect(instances[0]).toHaveProperty('weekdays')
       expect(instances[0]).toHaveProperty('intervalStart')
       expect(instances[0]).toHaveProperty('intervalEnd')

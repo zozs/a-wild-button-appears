@@ -110,7 +110,7 @@ module.exports = {
     const instanceData = {
       ...instance,
       channel: null,
-      manualAnnouncement: true, // TODO: set to false for production
+      manualAnnounce: true, // TODO: set to false for production
       weekdays: 0b1111100,
       intervalStart: 32400, // 09:00
       intervalEnd: 57600, // 16:00

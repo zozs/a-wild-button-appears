@@ -3,15 +3,14 @@ service: wildbutton
 provider:
   name: aws
   runtime: nodejs12.x
-  region: eu-north-1
+  region: eu-central-1
   stage: ${opt:stage, 'dev'}
 
 custom:
   serverless-offline:
     host: 0.0.0.0
-    port: 9850
+    httpPort: 9850
 
-# TODO: exclude firebase credential json file here?
 # you can add packaging information here
 #package:
 #  include:
@@ -48,6 +47,5 @@ functions:
         enabled: true
 
 plugins:
-  - serverless-offline-scheduler
   - serverless-offline
   - serverless-dotenv-plugin

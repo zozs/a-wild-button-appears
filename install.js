@@ -1,8 +1,6 @@
 const db = require('./db')
 const slack = require('./slack')
 
-const { Instance } = require('./instance')
-
 const { WebClient } = require('@slack/web-api')
 
 module.exports = async code => {
@@ -22,14 +20,14 @@ module.exports = async code => {
   })
 
   // Store stuff in database.
-  const instance = await db.installInstance(new Instance({
+  const instance = await db.installInstance({
     accessToken: result.access_token,
     scope: result.scope,
     botUserId: result.bot_user_id,
     appId: result.app_id,
     team: result.team,
     authedUser: result.authed_user
-  }))
+  })
 
   // tell user how configuration should be done by sending an IM to the installing user.
   await slack.sendImToUser(instance, instance.authedUser.id, {

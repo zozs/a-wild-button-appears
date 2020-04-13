@@ -19,7 +19,6 @@
     "mongodb-memory-server": "^6.5.2",
     "serverless-dotenv-plugin": "^2.3.2",
     "serverless-offline": "^6.1.4",
-    "serverless-offline-scheduler": "^0.4.1",
     "standard": "^14.3.3",
     "supertest": "^4.0.2",
     "uuid": "^7.0.3"

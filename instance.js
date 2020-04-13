@@ -5,13 +5,6 @@
  */
 class Instance {
   constructor (other) {
-    if (other !== undefined) {
-      // set properties from other object.
-      for (const [key, value] of Object.entries(other)) {
-        this[key] = value
-      }
-    }
-
     this.accessToken = ''
     this.team = {
       id: '',
@@ -32,6 +25,13 @@ class Instance {
     this.scheduled = {
       timestamp: 1582738633,
       messageId: ''
+    }
+
+    if (other !== undefined) {
+      // set properties from other object.
+      for (const [key, value] of Object.entries(other)) {
+        this[key] = value
+      }
     }
   }
 }
