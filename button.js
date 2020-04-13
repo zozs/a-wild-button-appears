@@ -18,7 +18,7 @@ module.exports = (timestamp) => {
             emoji: true
           },
           action_id: 'wild_button',
-          value: timestamp.toISO(),
+          value: timestamp.toUTC().toISO(),
           style: 'primary'
         }
       ]

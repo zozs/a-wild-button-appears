@@ -43,7 +43,7 @@ functions:
     handler: handler-serverless.hourly
     events:
     - schedule:
-        rate: rate(1 minute)
+        rate: rate(1 hour)
         enabled: true
 
 plugins:

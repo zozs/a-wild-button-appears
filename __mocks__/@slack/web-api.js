@@ -1,9 +1,13 @@
 /* global jest */
 
 const mockAccess = jest.fn()
+const mockJoin = jest.fn()
 const mockOpen = jest.fn()
 const mockPostMessage = jest.fn()
-const mockScheduleMessage = jest.fn()
+const mockScheduleMessage = jest.fn(async () => ({
+  ok: true,
+  scheduled_message_id: 'Q1298393284'
+}))
 
 const mock = jest.fn().mockImplementation(() => {
   return {
@@ -12,6 +16,7 @@ const mock = jest.fn().mockImplementation(() => {
       scheduleMessage: mockScheduleMessage
     },
     conversations: {
+      join: mockJoin,
       open: mockOpen
     },
     oauth: {
@@ -25,6 +30,7 @@ const mock = jest.fn().mockImplementation(() => {
 module.exports = {
   WebClient: mock,
   mockAccess,
+  mockJoin,
   mockOpen,
   mockPostMessage,
   mockScheduleMessage

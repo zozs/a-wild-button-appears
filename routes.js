@@ -63,7 +63,7 @@ module.exports = (app) => {
   // Will handle direct installation of app to workspace
   app.get('/install', async (req, res) => {
     const clientId = process.env.SLACK_CLIENT_ID
-    const scopes = 'channels:read,groups:read,im:read,chat:write,im:write,commands'
+    const scopes = 'channels:read,channels:join,groups:read,im:read,chat:write,chat:write.public,im:write,commands'
     const redirectUri = process.env.SLACK_REDIRECT_URI
     res.redirect(`https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=${scopes}&redirect_uri=${redirectUri}`)
   })

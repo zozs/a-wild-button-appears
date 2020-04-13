@@ -297,6 +297,8 @@ module.exports = {
     const timestamp = dateTime.toUTC().toBSON()
     const collection = await instanceCollection()
 
+    console.debug(`Storing scheduled time ${dateTime} for instance ${instanceRef}`)
+
     const result = await collection.updateOne({ 'team.id': instanceRef }, {
       $set: {
         scheduled: {

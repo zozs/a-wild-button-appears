@@ -16,7 +16,22 @@ module.exports = {
       channel: instance.channel,
       post_at: Math.floor(timestamp.toSeconds())
     }
-    await web.chat.scheduleMessage(object)
+
+    try {
+      return await web.chat.scheduleMessage(object)
+    } catch (e) {
+      // If we fail because we're not in the channel we're trying to post to, join it
+      // first, then try again.
+      if (e.data.error === 'not_in_channel') {
+        await web.conversations.join({
+          channel: instance.channel
+        })
+
+        return web.chat.scheduleMessage(object)
+      } else {
+        throw e
+      }
+    }
   },
 
   async sendImToUser (instance, user, data) {

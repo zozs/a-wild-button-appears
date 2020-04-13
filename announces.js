@@ -17,7 +17,7 @@ async function hourlyCheck () {
     const now = DateTime.local()
     const timestamp = await nextAnnounce(instance, now)
 
-    const { scheduled_message_id: messageId } = await slack.scheduleMessage(instance, button(timestamp))
+    const { scheduled_message_id: messageId } = await slack.scheduleMessage(instance, timestamp, button(timestamp))
     await db.storeScheduled(instanceRef, timestamp, messageId)
   }
 }

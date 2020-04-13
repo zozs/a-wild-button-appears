@@ -3,11 +3,13 @@
 const { hourlyCheck, nextAnnounce } = require('./announces')
 const { DateTime } = require('luxon')
 
+const button = require('./button')
 const db = require('./db')
 const slack = require('./slack')
 
 const { Instance } = require('./instance')
 
+jest.mock('./button')
 jest.mock('./db')
 jest.mock('./instance')
 jest.mock('./slack')
@@ -67,9 +69,17 @@ describe('hourly check', () => {
       post_at: '1562180400'
     }))
 
+    button.mockImplementation(() => ({
+      text: 'test'
+    }))
+
     await hourlyCheck()
     expect(slack.scheduleMessage.mock.calls.length).toBe(1)
     expect(slack.scheduleMessage.mock.calls[0][0]).toHaveProperty('channel', testInstance.channel)
+    expect(slack.scheduleMessage.mock.calls[0][1]).toHaveProperty('isLuxonDateTime', true)
+    expect(slack.scheduleMessage.mock.calls[0][2]).toHaveProperty('text', 'test')
+
+    expect(button).toHaveBeenCalledTimes(1)
 
     expect(db.storeScheduled.mock.calls.length).toBe(1)
     expect(db.storeScheduled.mock.calls[0][0]).toBe('T00000000')

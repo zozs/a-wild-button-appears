@@ -5,7 +5,7 @@ const slack = require('./slack')
 const { Instance } = require('./instance')
 
 const { DateTime } = require('luxon')
-const { WebClient, mockOpen, mockPostMessage, mockScheduleMessage } = require('@slack/web-api')
+const { WebClient, mockJoin, mockOpen, mockPostMessage, mockScheduleMessage } = require('@slack/web-api')
 const { IncomingWebhook, mockSend } = require('@slack/webhook')
 
 jest.mock('./instance')
@@ -17,18 +17,20 @@ beforeEach(() => {
   // Clear all instances and calls to constructor and all methods
   IncomingWebhook.mockClear()
   WebClient.mockClear()
+  mockJoin.mockClear()
   mockOpen.mockClear()
   mockPostMessage.mockClear()
   mockScheduleMessage.mockClear()
 })
 
 describe('slack api', () => {
-  test('schedules a message', async () => {
+  test('schedules a message and returns scheduled message id', async () => {
     const t = DateTime.local()
     const data = {}
-    await slack.scheduleMessage(testInstance, t, data)
+    const result = await slack.scheduleMessage(testInstance, t, data)
     expect(WebClient).toHaveBeenCalledTimes(1)
     expect(mockScheduleMessage.mock.calls.length).toBe(1)
+    expect(result).toHaveProperty('scheduled_message_id')
   })
 
   test('schedules a message with a channel parameter', async () => {
@@ -47,6 +49,25 @@ describe('slack api', () => {
     expect(WebClient).toHaveBeenCalledTimes(1)
     expect(mockScheduleMessage).toHaveBeenCalledTimes(1)
     expect(mockScheduleMessage.mock.calls[0][0]).toHaveProperty('post_at', Math.floor(t.toSeconds()))
+  })
+
+  test('schedules a message to a channel bot is not in', async () => {
+    mockScheduleMessage.mockRejectedValueOnce({ data: { ok: false, error: 'not_in_channel' } })
+
+    const t = DateTime.local()
+    const data = {}
+    try {
+      await slack.scheduleMessage(testInstance, t, data)
+    } catch (err) {
+      console.log(`should not throw ${err} JSON: ${JSON.stringify(err)}`)
+      expect(err).toBe(undefined)
+    }
+    expect(WebClient).toHaveBeenCalledTimes(1)
+    expect(mockJoin).toHaveBeenCalledTimes(1)
+    expect(mockJoin.mock.calls[0][0]).toHaveProperty('channel', testInstance.channel)
+    expect(mockScheduleMessage).toHaveBeenCalledTimes(2)
+    expect(mockScheduleMessage.mock.calls[0][0]).toHaveProperty('post_at', Math.floor(t.toSeconds()))
+    expect(mockScheduleMessage.mock.calls[1][0]).toHaveProperty('post_at', Math.floor(t.toSeconds()))
   })
 
   test('replacing response has replace_original set', async () => {
