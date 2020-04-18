@@ -3,20 +3,23 @@
 const { DateTime } = require('luxon')
 
 module.exports = {
-  clickData (uuid) {
+  clickData (instanceRef, uuid) {
+    if (instanceRef === undefined || uuid === undefined) {
+      throw new Error('instanceRef or uuid must be given')
+    }
     return {
       clicks: [
         {
           user: 'test1',
-          clickTime: '2020-01-02T12:34:56.000Z'
+          timestamp: '2020-01-02T12:34:56.000Z'
         },
         {
           user: 'test2',
-          clickTime: '2020-01-02T12:34:56.350Z'
+          timestamp: '2020-01-02T12:34:56.350Z'
         },
         {
           user: 'test3',
-          clickTime: '2020-01-02T12:34:57.350Z'
+          timestamp: '2020-01-02T12:34:57.350Z'
         }
       ]
     }

@@ -96,8 +96,21 @@ async function instanceCollection () {
 }
 
 module.exports = {
-  clickData (uuid) {
-    throw new Error('not implemented')
+  /**
+   * Returns an object with a clicks property describing an array of clicks sorted by the
+   * timestamp of the clicks made on a certain uuid. Returns an empty list if uuid is not found.
+   */
+  async clickData (instanceRef, uuid) {
+    const collection = await instanceCollection()
+    const instance = await collection.findOne({
+      'team.id': instanceRef
+    })
+    const button = instance.buttons.find(e => e.uuid === uuid)
+    if (button !== undefined && button.clicks !== undefined) {
+      return { clicks: button.clicks }
+    } else {
+      return { clicks: [] }
+    }
   },
   clicksPerUser () {
     throw new Error('not implemented')
@@ -309,6 +322,7 @@ module.exports = {
     })
 
     if (result.modifiedCount !== 1) {
+      console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
       throw new Error(`Failed to stored scheduled, nothing were matched in query! instanceRef: ${instanceRef}`)
     }
   },

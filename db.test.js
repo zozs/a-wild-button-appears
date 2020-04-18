@@ -42,6 +42,79 @@ describe('database', () => {
     await collection.deleteMany({})
   })
 
+  describe('clickData', () => {
+    beforeEach(async () => {
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      // For each of these tests, initialize the db with some contents.
+      const instance = {
+        accessToken: 'xoxop-134234234',
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        channel: 'C1',
+        scheduled: {},
+        buttons: [
+          {
+            uuid: '2020-03-14T13:37:00.000Z',
+            clicks: [
+              {
+                user: 'U12341234',
+                timestamp: '2020-03-14T13:37:02.000Z'
+              },
+              {
+                user: 'U99991111',
+                timestamp: '2020-03-14T13:37:03.000Z'
+              }
+            ]
+          },
+          {
+            uuid: '2020-03-15T13:37:00.000Z'
+          }
+        ]
+      }
+
+      await collection.insertMany([instance])
+    })
+
+    test('returns clicks in the usual case', async () => {
+      const { clicks } = await db.clickData('T1', '2020-03-14T13:37:00.000Z')
+      expect(clicks).toEqual([
+        {
+          user: 'U12341234',
+          timestamp: '2020-03-14T13:37:02.000Z'
+        },
+        {
+          user: 'U99991111',
+          timestamp: '2020-03-14T13:37:03.000Z'
+        }
+      ])
+    })
+
+    test('returns empty when uuid does not have clicks array', async () => {
+      const { clicks } = await db.clickData('T1', '2020-03-15T13:37:00.000Z')
+      expect(clicks).toEqual([])
+    })
+
+    test('returns empty when uuid does not exist', async () => {
+      const { clicks } = await db.clickData('T1', '2020-03-16T13:37:00.000Z')
+      expect(clicks).toEqual([])
+    })
+  })
+
   describe('installInstance', () => {
     test('creates a new object in database', async () => {
       const testInstance = new Instance()
@@ -729,7 +802,7 @@ describe('database', () => {
         buttons: []
       }
 
-      collection.insertMany([{
+      await collection.insertMany([{
         ...sharedProperties,
         team: {
           id: 'T1',

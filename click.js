@@ -41,10 +41,10 @@ function determiningMessageFormatter () {
 function wonMessageFormatter (uuid, clickData) {
   // TODO: add block in case this was the 100, 200, etc. button.
   const winnerUser = clickData.clicks[0].user
-  const winnerClickTime = formatTime(uuid, clickData.clicks[0].clickTime)
+  const winnerClickTime = formatTime(uuid, clickData.clicks[0].timestamp)
 
   const runnersUp = clickData.clicks.slice(1)
-  const runnersUpTexts = runnersUp.map(r => `<@${r.user}> (${formatTime(uuid, r.clickTime)} s)`)
+  const runnersUpTexts = runnersUp.map(r => `<@${r.user}> (${formatTime(uuid, r.timestamp)} s)`)
 
   const blocks = [
     {
@@ -110,7 +110,7 @@ module.exports = async (res, payload) => {
   const waitTime = runnerUpWindow + consistencyTime
   await new Promise(resolve => setTimeout(() => resolve(), waitTime))
 
-  const clickData = await db.clickData(uuid)
+  const clickData = await db.clickData(instanceRef, uuid)
   await slack.sendReplacingResponse(payload.response_url, wonMessageFormatter(uuid, clickData))
 }
 
