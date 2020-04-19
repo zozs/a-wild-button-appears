@@ -11,8 +11,6 @@ const wildbuttonApp = require('./wildbutton')
 module.exports.handler = serverless(wildbuttonApp(clickRecorderHandler))
 
 module.exports.hourly = async (event, context) => {
-  console.log(event)
-  console.log(context)
   try {
     await hourlyCheck()
     return {

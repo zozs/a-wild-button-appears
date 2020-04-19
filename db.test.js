@@ -421,7 +421,7 @@ describe('database', () => {
       const collection = await db._instanceCollection()
       await collection.deleteMany({})
 
-      collection.insertMany([{
+      await collection.insertMany([{
         accessToken: 'xoxop-134234234',
         manualAnnounce: false,
         weekdays: 0,
