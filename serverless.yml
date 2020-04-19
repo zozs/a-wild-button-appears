@@ -5,6 +5,11 @@ provider:
   runtime: nodejs12.x
   region: eu-central-1
   stage: ${opt:stage, 'dev'}
+	iamRoleStatements:
+	  - Effect: Allow
+	    Action:
+	      - lambda:InvokeFunction
+	    Resource: "*"
 
 custom:
   serverless-offline:
@@ -39,12 +44,17 @@ functions:
     - http:
         path: /interactive
         method: post
+    environment:
+      CLICK_RECORDER_LAMBDA: ${self:service}-${self:provider.stage}-wildbutton-click
   wildbutton-hourlycheck:
     handler: handler-serverless.hourly
     events:
     - schedule:
         rate: rate(1 hour)
         enabled: true
+  wildbutton-click:
+    handler: handler-serverless.click
+
 
 plugins:
   - serverless-offline

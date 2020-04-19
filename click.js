@@ -82,36 +82,46 @@ function wonMessageFormatter (uuid, clickData) {
   return wonMessage
 }
 
-module.exports = async (res, payload) => {
-  // TODO: currently assuming that instanceRef is always team id.
-  const instanceRef = payload.team.id
-  const uuid = payload.actions[0].value
-  const user = payload.user.id
-  const now = DateTime.local()
+module.exports = {
+  async click (res, payload, clickRecorderHandler) {
+    // launch async call to click recorder. this is done through a handler, since in
+    // some cases we need to launch an async call to another lambda function (when deploying
+    // e.g., on AWS). Running locally, we can just call clickRecorder in the same thread,
+    // but we ensure it is deferred to the next event loop so we acknowledge as soon as possible.
+    clickRecorderHandler({
+      instanceRef: payload.team.id, // TODO: currently assuming that instanceRef is always team id.
+      uuid: payload.actions[0].value,
+      user: payload.user.id,
+      timestamp: DateTime.local(), // TODO: use timestamp from slack instead? (action_ts)
+      responseUrl: payload.response_url
+    })
 
-  // immediately acknowledge click, we'll update message later.
-  res.send('')
+    // immediately acknowledge click. we'll update message in the click recorder instead.
+    res.send('')
+  },
 
-  // record click, duplicate clicks by same user will be silently ignored.
-  // firstClick is true if we believe this was the first click of the button.
-  // it is up to the db layer to filter out duplicates and ensure all times are
-  // within the runner up window.
-  const firstClick = await db.recordClick(instanceRef, uuid, user, now)
-  if (firstClick) {
-    // send an "determining winner" response immediately, show final winner in about 2 seconds.
-    await slack.sendReplacingResponse(payload.response_url, determiningMessageFormatter())
+  async clickRecorder ({ instanceRef, uuid, user, timestamp, responseUrl }) {
+    // record click, duplicate clicks by same user will be silently ignored.
+    // firstClick is true if we believe this was the first click of the button.
+    // it is up to the db layer to filter out duplicates and ensure all times are
+    // within the runner up window.
+    const firstClick = await db.recordClick(instanceRef, uuid, user, timestamp)
+    if (firstClick) {
+      // send an "determining winner" response immediately, show final winner in about 2 seconds.
+      await slack.sendReplacingResponse(responseUrl, determiningMessageFormatter())
+    }
+
+    // After this, we wait the runner up windows + some extra second for db to be consistent,
+    // then we update the message with the final results.
+    // Default is 2 + 1 seconds.
+    const runnerUpWindow = parseInt(process.env.RUNNER_UP_WINDOW) || 2000
+    const consistencyTime = parseInt(process.env.CONSISTENCY_TIME) || 1000
+    const waitTime = runnerUpWindow + consistencyTime
+    await new Promise(resolve => setTimeout(() => resolve(), waitTime))
+
+    const clickData = await db.clickData(instanceRef, uuid)
+    await slack.sendReplacingResponse(responseUrl, wonMessageFormatter(uuid, clickData))
   }
-
-  // After this, we wait the runner up windows + some extra second for db to be consistent,
-  // then we update the message with the final results.
-  // Default is 2 + 1 seconds.
-  const runnerUpWindow = parseInt(process.env.RUNNER_UP_WINDOW) || 2000
-  const consistencyTime = parseInt(process.env.CONSISTENCY_TIME) || 1000
-  const waitTime = runnerUpWindow + consistencyTime
-  await new Promise(resolve => setTimeout(() => resolve(), waitTime))
-
-  const clickData = await db.clickData(instanceRef, uuid)
-  await slack.sendReplacingResponse(payload.response_url, wonMessageFormatter(uuid, clickData))
 }
 
 // old below

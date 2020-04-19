@@ -1,6 +1,7 @@
 const schedule = require('node-schedule')
 
 const { hourlyCheck } = require('./announces')
+const { clickRecorder } = require('./click')
 const wildbuttonApp = require('./wildbutton')
 
 // Only used if running standalone, if serverless, a scheduled
@@ -17,4 +18,13 @@ function initSchedule () {
 }
 
 initSchedule()
-wildbuttonApp.listen(process.env.PORT, () => console.log('A wild BUTTON appeared (standalone) listening on port', process.env.PORT))
+
+wildbuttonApp(clickRecorderHandler).listen(process.env.PORT, () => {
+  console.log(`A wild BUTTON appeared (standalone) listening on port ${process.env.PORT}`)
+})
+
+// In standalone mode, we can call the clickRecorder almost directly, except that we defer it
+// to the next event loop to allow us to acknowledge Slack before recording click.
+function clickRecorderHandler (clickObject) {
+  setImmediate(() => clickRecorder(clickObject))
+}

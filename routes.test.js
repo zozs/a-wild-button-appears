@@ -1,7 +1,9 @@
 /* global jest, describe, expect, test */
 
 const request = require('supertest')
-const app = require('./wildbutton')
+
+const { click: clickCommand } = require('./click')
+const wildbuttonApp = require('./wildbutton')
 const install = require('./install')
 
 // silence console.debug
@@ -11,6 +13,8 @@ jest.mock('./click')
 jest.mock('./db')
 jest.mock('./install')
 jest.mock('./slack-request-verifier')
+
+const app = wildbuttonApp(null)
 
 function commandRequest (app) {
   return request(app)
@@ -114,6 +118,8 @@ function interactiveRequest (app) {
 
 describe('Test interaction payloads', () => {
   test('It should call the click handler for a wildbutton click', async () => {
+    clickCommand.mockImplementationOnce(async (res, payload, clickRecorderHandler) => res.send(''))
+
     const response = await interactiveRequest(app)
       .send({
         payload: JSON.stringify({

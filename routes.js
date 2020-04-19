@@ -1,5 +1,5 @@
 // const button = require('./button')
-const clickHandler = require('./click')
+const { click: clickCommand } = require('./click')
 const helpCommand = require('./help')
 const installCommand = require('./install')
 const statsCommand = require('./stats')
@@ -10,7 +10,7 @@ const { slackVerify } = require('./slack-request-verifier')
 
 const extractUrlencoded = slackExtractUrlencoded({ extended: true })
 
-module.exports = (app) => {
+module.exports = (app, clickRecorderHandler) => {
   app.get('/', (req, res) => {
     res.send('A wild BUTTON appears: API is ready.')
   })
@@ -49,7 +49,7 @@ module.exports = (app) => {
 
       if (payload.type === 'block_actions' && payload.actions[0].action_id === 'wild_button') {
         // Somebody clicked!
-        await clickHandler(res, payload)
+        await clickCommand(res, payload, clickRecorderHandler)
       } else {
         console.debug(`Got unknown interactive response payload: ${req.body.payload}`)
         res.sendStatus(400)

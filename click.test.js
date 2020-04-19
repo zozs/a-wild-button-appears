@@ -1,9 +1,11 @@
 /* global beforeEach, describe, expect, jest, test */
 
-const click = require('./click')
+const { click, clickRecorder } = require('./click')
 
 const db = require('./db')
 const slack = require('./slack')
+
+const { DateTime } = require('luxon')
 
 jest.mock('./db')
 jest.mock('./slack')
@@ -73,34 +75,55 @@ describe('click handler to', () => {
 
   test('acknowledge click', async () => {
     const resMock = { send: jest.fn(x => null) }
+    const handlerMock = jest.fn()
 
-    await click(resMock, clickMockPayload)
+    await click(resMock, clickMockPayload, handlerMock)
 
-    expect(resMock.send.mock.calls.length).toBe(1)
+    expect(resMock.send).toHaveBeenCalledTimes(1)
+    expect(handlerMock).toHaveBeenCalledTimes(1)
+    expect(handlerMock).toHaveBeenCalledBefore(resMock.send)
   })
 
   test('send determining message on first click', async () => {
-    const resMock = { send: jest.fn(x => null) }
+    const clickObject = {
+      instanceRef: clickMockPayload.team.id,
+      uuid: clickMockUuid,
+      timestamp: DateTime.local(),
+      user: clickMockPayload.user.id,
+      responseUrl: clickMockResponseUrl
+    }
 
-    await click(resMock, clickMockPayload)
+    await clickRecorder(clickObject)
 
     expect(slack.sendReplacingResponse).toHaveBeenCalledTimes(2)
   })
 
   test('not send determining message on second click', async () => {
-    const resMock = { send: jest.fn(x => null) }
     db.recordClick.mockImplementationOnce(async () => false)
 
-    await click(resMock, clickMockPayload)
+    const clickObject = {
+      instanceRef: clickMockPayload.team.id,
+      uuid: clickMockUuid,
+      timestamp: DateTime.local(),
+      user: clickMockPayload.user.id,
+      responseUrl: clickMockResponseUrl
+    }
 
-    expect(slack.sendReplacingResponse.mock.calls.length).toBe(1)
+    await clickRecorder(clickObject)
+
     expect(slack.sendReplacingResponse).toHaveBeenCalledTimes(1)
   })
 
   test('to send to response url', async () => {
-    const resMock = { send: jest.fn(x => null) }
+    const clickObject = {
+      instanceRef: clickMockPayload.team.id,
+      uuid: clickMockUuid,
+      timestamp: DateTime.local(),
+      user: clickMockPayload.user.id,
+      responseUrl: clickMockResponseUrl
+    }
 
-    await click(resMock, clickMockPayload)
+    await clickRecorder(clickObject)
 
     expect(slack.sendReplacingResponse).toHaveBeenCalledTimes(2)
     expect(slack.sendReplacingResponse.mock.calls[1][0]).toBe(clickMockResponseUrl)

@@ -1,6 +1,5 @@
 require('dotenv').config()
 const express = require('express')
-// const mountAnnounces = require('./announces')
 const mountRoutes = require('./routes')
 
 const app = express()
@@ -15,9 +14,16 @@ const app = express()
  * PORT: Port for HTTP server to listen on
  * MONGO_URL: Mongo connection string.
  * MONGO_DATABASE_NAME: Database name for mongo.
+ *
+ * Environmental variables that may be required depending on deployment:
+ *
+ * JWT_SECRET: For AWS lambda deployments to secure asynchronous lambda invocations.
+ *             Should be a random string
+ * CLICK_RECORDER_LAMBDA: Function name of lambda for click registration. Should be
+ *                        filled in automatically by serverless.yml
  */
 
-mountRoutes(app)
-// mountAnnounces()
-
-module.exports = app
+module.exports = (clickRecorderHandler) => {
+  mountRoutes(app, clickRecorderHandler)
+  return app
+}
