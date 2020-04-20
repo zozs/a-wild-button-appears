@@ -41,5 +41,4 @@ jobs:
       env:
         USERNAME: ${{ secrets.DEBRICKED_USERNAME }}
         PASSWORD: ${{ secrets.DEBRICKED_PASSWORD }}
-        SKIP_SCAN: 'true'
 
