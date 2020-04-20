@@ -5,13 +5,12 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ serverless ]
+    branches: [ serverless-debricked ]
   pull_request:
-    branches: [ serverless ]
+    branches: [ serverless-debricked ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -29,3 +28,18 @@ jobs:
     - run: npm test
       env:
         CI: true
+
+  vulnerabilities:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Debricked vulnerability scan
+      uses: docker://zozs/debricked-scan-gh
+      with:
+        entrypoint: ./github-action.sh
+      env:
+        USERNAME: ${{ secrets.DEBRICKED_USERNAME }}
+        PASSWORD: ${{ secrets.DEBRICKED_PASSWORD }}
+        SKIP_SCAN: 'true'
+
