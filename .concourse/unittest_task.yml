@@ -1,0 +1,11 @@
+image_resource:
+  type: docker-image
+  source:
+    repository: node
+    tag: '12'
+
+inputs:
+  - name: wildbutton
+
+run:
+  path: wildbutton/.concourse/unittest_task.sh
