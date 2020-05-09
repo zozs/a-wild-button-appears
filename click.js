@@ -3,39 +3,8 @@ const slack = require('./slack')
 
 const { DateTime } = require('luxon')
 
-/*
-function diffTime (uuid, time) {
-  return (Date.parse(time) - Date.parse(uuid)) / 1000
-}
-*/
-
 function formatTime (uuid, time) {
   return DateTime.fromJSDate(time).diff(DateTime.fromISO(uuid), 'seconds').seconds.toFixed(2)
-}
-
-function determiningMessageFormatter () {
-  const blocks = [
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: '*A wild BUTTON appears!*'
-      }
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: ':hourglass_flowing_sand: Determining fastest clicks...'
-      }
-    }
-  ]
-
-  const determiningMessage = {
-    text: 'Determining winner',
-    blocks
-  }
-  return determiningMessage
 }
 
 function wonMessageFormatter (uuid, clickData) {
@@ -88,12 +57,15 @@ module.exports = {
     // some cases we need to launch an async call to another lambda function (when deploying
     // e.g., on AWS). Running locally, we can just call clickRecorder in the same thread,
     // but we ensure it is deferred to the next event loop so we acknowledge as soon as possible.
+
+    const timestamp = DateTime.fromMillis(Math.round(parseFloat(payload.actions[0].action_ts) * 1000))
+
     await clickRecorderHandler({
       instanceRef: payload.team.id, // TODO: currently assuming that instanceRef is always team id.
       uuid: payload.actions[0].value,
       user: payload.user.id,
-      timestamp: DateTime.local(), // TODO: use timestamp from slack instead? (action_ts)
-      responseUrl: payload.response_url
+      responseUrl: payload.response_url,
+      timestamp
     })
 
     // immediately acknowledge click. we'll update message in the click recorder instead.
@@ -107,8 +79,11 @@ module.exports = {
     // within the runner up window.
     const firstClick = await db.recordClick(instanceRef, uuid, user, timestamp)
     if (firstClick) {
-      // send an "determining winner" response immediately, show final winner in about 2 seconds.
-      await slack.sendReplacingResponse(responseUrl, determiningMessageFormatter())
+      // send an update response immediately, also update later in case db is inconsistent.
+      const firstClickData = await db.clickData(instanceRef, uuid)
+      if (firstClickData.clicks.length > 0) {
+        await slack.sendReplacingResponse(responseUrl, wonMessageFormatter(uuid, firstClickData))
+      }
     }
 
     // After this, we wait the runner up windows + some extra second for db to be consistent,

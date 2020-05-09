@@ -58,7 +58,7 @@ const clickMockPayload = {
       },
       value: clickMockUuid,
       type: 'button',
-      action_ts: '1548426417.840180'
+      action_ts: '1548426417.840580'
     }
   ]
 }
@@ -82,6 +82,20 @@ describe('click handler to', () => {
     expect(resMock.send).toHaveBeenCalledTimes(1)
     expect(handlerMock).toHaveBeenCalledTimes(1)
     expect(handlerMock).toHaveBeenCalledBefore(resMock.send)
+  })
+
+  test('use action_ts as timestamp', async () => {
+    const resMock = { send: jest.fn(x => null) }
+    const handlerMock = jest.fn()
+
+    await click(resMock, clickMockPayload, handlerMock)
+
+    expect(resMock.send).toHaveBeenCalledTimes(1)
+    expect(handlerMock).toHaveBeenCalledTimes(1)
+    expect(handlerMock).toHaveBeenCalledBefore(resMock.send)
+    const expected = DateTime.fromISO('2019-01-25T14:26:57.841Z')
+    const actual = handlerMock.mock.calls[0][0].timestamp
+    expect(+actual).toBe(+expected)
   })
 
   test('send determining message on first click', async () => {
@@ -133,21 +147,23 @@ describe('click handler to', () => {
     const clickObject = {
       instanceRef: clickMockPayload.team.id,
       uuid: clickMockUuid,
-      timestamp: '2020-02-01T15:31:21.800Z', // 61.114 s difference.
+      timestamp: DateTime.fromISO('2020-02-01T15:31:21.800Z'), // 61.114 s difference.
       user: clickMockPayload.user.id,
       responseUrl: clickMockResponseUrl
     }
 
-    db.clickData.mockImplementationOnce(async () => {
-      return {
-        clicks: [
-          {
-            user: clickMockPayload.user.id,
-            timestamp: DateTime.fromISO('2020-02-01T15:31:21.800Z').toBSON() // 61.114 s difference.
-          }
-        ]
-      }
-    })
+    const mockClicksData = {
+      clicks: [
+        {
+          user: clickMockPayload.user.id,
+          timestamp: DateTime.fromISO('2020-02-01T15:31:21.800Z').toBSON() // 61.114 s difference.
+        }
+      ]
+    }
+
+    db.clickData
+      .mockImplementationOnce(async () => mockClicksData)
+      .mockImplementationOnce(async () => mockClicksData)
 
     await clickRecorder(clickObject)
 
@@ -159,25 +175,27 @@ describe('click handler to', () => {
     const clickObject = {
       instanceRef: clickMockPayload.team.id,
       uuid: clickMockUuid,
-      timestamp: '2020-02-01T15:31:21.800Z', // 61.114 s difference.
+      timestamp: DateTime.fromISO('2020-02-01T15:31:21.800Z'), // 61.114 s difference.
       user: clickMockPayload.user.id,
       responseUrl: clickMockResponseUrl
     }
 
-    db.clickData.mockImplementationOnce(async () => {
-      return {
-        clicks: [
-          {
-            user: clickMockPayload.user.id,
-            timestamp: DateTime.fromISO('2020-02-01T15:31:21.800Z').toBSON() // 61.114 s difference.
-          },
-          {
-            user: 'otheruser',
-            timestamp: DateTime.fromISO('2020-02-01T15:31:22.801Z').toBSON() // 62.115 s difference.
-          }
-        ]
-      }
-    })
+    const mockClicksData = {
+      clicks: [
+        {
+          user: clickMockPayload.user.id,
+          timestamp: DateTime.fromISO('2020-02-01T15:31:21.800Z').toBSON() // 61.114 s difference.
+        },
+        {
+          user: 'otheruser',
+          timestamp: DateTime.fromISO('2020-02-01T15:31:22.801Z').toBSON() // 62.115 s difference.
+        }
+      ]
+    }
+
+    db.clickData
+      .mockImplementationOnce(async () => mockClicksData)
+      .mockImplementationOnce(async () => mockClicksData)
 
     await clickRecorder(clickObject)
 
