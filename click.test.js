@@ -128,4 +128,61 @@ describe('click handler to', () => {
     expect(slack.sendReplacingResponse).toHaveBeenCalledTimes(2)
     expect(slack.sendReplacingResponse.mock.calls[1][0]).toBe(clickMockResponseUrl)
   })
+
+  test('correctly calculate the winning time and post it', async () => {
+    const clickObject = {
+      instanceRef: clickMockPayload.team.id,
+      uuid: clickMockUuid,
+      timestamp: '2020-02-01T15:31:21.800Z', // 61.114 s difference.
+      user: clickMockPayload.user.id,
+      responseUrl: clickMockResponseUrl
+    }
+
+    db.clickData.mockImplementationOnce(async () => {
+      return {
+        clicks: [
+          {
+            user: clickMockPayload.user.id,
+            timestamp: DateTime.fromISO('2020-02-01T15:31:21.800Z').toBSON() // 61.114 s difference.
+          }
+        ]
+      }
+    })
+
+    await clickRecorder(clickObject)
+
+    expect(slack.sendReplacingResponse.mock.calls[1][0]).toBe(clickMockResponseUrl)
+    expect(JSON.stringify(slack.sendReplacingResponse.mock.calls[1][1])).toMatch(/61\.11 s/)
+  })
+
+  test('correctly calculate the winning time and runner up and post it', async () => {
+    const clickObject = {
+      instanceRef: clickMockPayload.team.id,
+      uuid: clickMockUuid,
+      timestamp: '2020-02-01T15:31:21.800Z', // 61.114 s difference.
+      user: clickMockPayload.user.id,
+      responseUrl: clickMockResponseUrl
+    }
+
+    db.clickData.mockImplementationOnce(async () => {
+      return {
+        clicks: [
+          {
+            user: clickMockPayload.user.id,
+            timestamp: DateTime.fromISO('2020-02-01T15:31:21.800Z').toBSON() // 61.114 s difference.
+          },
+          {
+            user: 'otheruser',
+            timestamp: DateTime.fromISO('2020-02-01T15:31:22.801Z').toBSON() // 62.115 s difference.
+          }
+        ]
+      }
+    })
+
+    await clickRecorder(clickObject)
+
+    expect(slack.sendReplacingResponse.mock.calls[1][0]).toBe(clickMockResponseUrl)
+    expect(JSON.stringify(slack.sendReplacingResponse.mock.calls[1][1])).toMatch(/61\.11 s/)
+    expect(JSON.stringify(slack.sendReplacingResponse.mock.calls[1][1])).toMatch(/62\.12 s/)
+  })
 })

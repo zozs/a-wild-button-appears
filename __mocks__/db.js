@@ -3,7 +3,7 @@
 const { DateTime } = require('luxon')
 
 module.exports = {
-  clickData (instanceRef, uuid) {
+  clickData: jest.fn(async (instanceRef, uuid) => {
     if (instanceRef === undefined || uuid === undefined) {
       throw new Error('instanceRef or uuid must be given')
     }
@@ -11,19 +11,19 @@ module.exports = {
       clicks: [
         {
           user: 'test1',
-          timestamp: '2020-01-02T12:34:56.000Z'
+          timestamp: DateTime.fromISO('2020-01-02T12:34:56.000Z').toBSON()
         },
         {
           user: 'test2',
-          timestamp: '2020-01-02T12:34:56.350Z'
+          timestamp: DateTime.fromISO('2020-01-02T12:34:56.350Z').toBSON()
         },
         {
           user: 'test3',
-          timestamp: '2020-01-02T12:34:57.350Z'
+          timestamp: DateTime.fromISO('2020-01-02T12:34:57.350Z').toBSON()
         }
       ]
     }
-  },
+  }),
   clicksPerUser () {
     return [
       {

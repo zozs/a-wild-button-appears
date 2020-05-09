@@ -5,25 +5,23 @@ provider:
   runtime: nodejs12.x
   region: eu-central-1
   stage: ${opt:stage, 'dev'}
-	iamRoleStatements:
-	  - Effect: Allow
-	    Action:
-	      - lambda:InvokeFunction
-	    Resource: "*"
+  memorySize: 512
+  timeout: 10
+  iamRoleStatements:
+  - Effect: Allow
+    Action:
+    - lambda:InvokeFunction
+    Resource:
+    - arn:aws:lambda:${self:provider.region}:*:*
 
 custom:
   serverless-offline:
     host: 0.0.0.0
     httpPort: 9850
 
-# you can add packaging information here
-#package:
-#  include:
-#    - include-me.js
-#    - include-me-dir/**
-#  exclude:
-#    - exclude-me.js
-#    - exclude-me-dir/**
+package:
+  exclude:
+    - node_modules/.cache/**
 
 functions:
   wildbutton:

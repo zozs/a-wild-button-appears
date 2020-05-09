@@ -47,7 +47,7 @@ module.exports = {
 
   async sendReplacingResponse (responseUrl, data) {
     const webhook = new IncomingWebhook(responseUrl)
-    webhook.send({
+    await webhook.send({
       ...data,
       replace_original: true
     })

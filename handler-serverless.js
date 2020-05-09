@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const serverless = require('serverless-http')
 
 const { DateTime } = require('luxon')
+const { promisify } = require('util')
 
 const { hourlyCheck } = require('./announces')
 const { clickRecorder } = require('./click')
@@ -34,7 +35,7 @@ module.exports.hourly = async (event, context) => {
 
 const lambda = new AWS.Lambda()
 
-function clickRecorderHandler ({ instanceRef, uuid, user, timestamp, responseUrl }) {
+async function clickRecorderHandler ({ instanceRef, uuid, user, timestamp, responseUrl }) {
   // Refuse to continue if JWT_SECRET is not set.
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET must be set! Not registering click.')
@@ -46,15 +47,16 @@ function clickRecorderHandler ({ instanceRef, uuid, user, timestamp, responseUrl
   const params = {
     FunctionName: process.env.CLICK_RECORDER_LAMBDA,
     InvocationType: 'Event',
-    Payload: token
+    Payload: JSON.stringify({ token })
   }
 
-  lambda.invoke(params, (error, data) => {
-    if (error) {
-      console.error(JSON.stringify(error))
-      throw new Error(`Error launching async clickRecorder lambda: ${JSON.stringify(error)}`)
-    }
-  })
+  try {
+    // AWS.Lambda() requires the this context otherwise we get errors, so bind this to promise.
+    await promisify(lambda.invoke).call(lambda, params)
+  } catch (error) {
+    console.error(`Error launching async clickRecorder lambda: ${error}, JSON: ${JSON.stringify(error)}`)
+    throw new Error('Error launching async clickRecorder lambda')
+  }
 }
 
 module.exports.click = async (event, context) => {
@@ -62,7 +64,7 @@ module.exports.click = async (event, context) => {
   try {
     // Verify and decode JWT token in body.
     const { instanceRef, uuid, user, timestamp, responseUrl } =
-      jwt.verify(event.body, process.env.JWT_SECRET, { algorithms: ['HS256'] })
+      jwt.verify(event.token, process.env.JWT_SECRET, { algorithms: ['HS256'] })
 
     const parsedTimestamp = DateTime.fromISO(timestamp)
     await clickRecorder({ instanceRef, uuid, user, timestamp: parsedTimestamp, responseUrl })

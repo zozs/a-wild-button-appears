@@ -19,7 +19,7 @@ wildbuttonApp.mockImplementation((handler) => {
   clickRecorderHandler = handler
 })
 
-const lambdaInvokeMock = jest.fn()
+const lambdaInvokeMock = jest.fn((params, cb) => cb(null, { some: 'data' }))
 AWS.Lambda.mockImplementation(() => ({
   invoke: lambdaInvokeMock
 }))

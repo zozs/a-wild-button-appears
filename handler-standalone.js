@@ -25,6 +25,6 @@ wildbuttonApp(clickRecorderHandler).listen(process.env.PORT, () => {
 
 // In standalone mode, we can call the clickRecorder almost directly, except that we defer it
 // to the next event loop to allow us to acknowledge Slack before recording click.
-function clickRecorderHandler (clickObject) {
+async function clickRecorderHandler (clickObject) {
   setImmediate(() => clickRecorder(clickObject))
 }

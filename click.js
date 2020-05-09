@@ -10,7 +10,7 @@ function diffTime (uuid, time) {
 */
 
 function formatTime (uuid, time) {
-  return ((Date.parse(time) - Date.parse(uuid)) / 1000).toFixed(2)
+  return DateTime.fromJSDate(time).diff(DateTime.fromISO(uuid), 'seconds').seconds.toFixed(2)
 }
 
 function determiningMessageFormatter () {
@@ -88,7 +88,7 @@ module.exports = {
     // some cases we need to launch an async call to another lambda function (when deploying
     // e.g., on AWS). Running locally, we can just call clickRecorder in the same thread,
     // but we ensure it is deferred to the next event loop so we acknowledge as soon as possible.
-    clickRecorderHandler({
+    await clickRecorderHandler({
       instanceRef: payload.team.id, // TODO: currently assuming that instanceRef is always team id.
       uuid: payload.actions[0].value,
       user: payload.user.id,
