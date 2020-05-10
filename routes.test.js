@@ -1,6 +1,7 @@
-/* global jest, describe, expect, test */
+/* global afterAll, beforeAll, jest, describe, expect, test */
 
 const request = require('supertest')
+const { verifyRequestSignature } = require('@slack/events-api')
 
 const { click: clickCommand } = require('./click')
 const wildbuttonApp = require('./wildbutton')
@@ -12,9 +13,12 @@ console.debug = jest.fn()
 jest.mock('./click')
 jest.mock('./db')
 jest.mock('./install')
-jest.mock('./slack-request-verifier')
+jest.mock('@slack/events-api')
 
 const app = wildbuttonApp(null)
+
+afterAll(() => verifyRequestSignature.mockReset())
+beforeAll(() => verifyRequestSignature.mockImplementation(() => true))
 
 function commandRequest (app) {
   return request(app)

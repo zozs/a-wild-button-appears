@@ -4,6 +4,7 @@
   "description": "A wild BUTTON appears - a useless bot for Slack.",
   "main": "wildbutton.js",
   "dependencies": {
+    "@slack/events-api": "^2.3.2",
     "@slack/web-api": "^5.8.0",
     "@slack/webhook": "^5.0.3",
     "aws-sdk": "^2.658.0",

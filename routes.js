@@ -5,10 +5,9 @@ const installCommand = require('./install')
 const statsCommand = require('./stats')
 const usageCommand = require('./usage')
 
-const { slackExtractUrlencoded } = require('./slack-request-extract')
-const { slackVerify } = require('./slack-request-verifier')
+const { slackVerifyUrlencoded } = require('./slack-request-verifier')
 
-const extractUrlencoded = slackExtractUrlencoded({ extended: true })
+const verifyUrlencoded = slackVerifyUrlencoded({ extended: true })
 
 module.exports = (app, clickRecorderHandler) => {
   app.get('/', (req, res) => {
@@ -16,7 +15,7 @@ module.exports = (app, clickRecorderHandler) => {
   })
 
   // Will receive /wildbutton slash command from Slack.
-  app.post('/commands', extractUrlencoded, slackVerify, async (req, res) => {
+  app.post('/commands', verifyUrlencoded, async (req, res) => {
     // extract slash command text from payload
     const body = req.body
     // const team = req.slack.team
@@ -43,7 +42,7 @@ module.exports = (app, clickRecorderHandler) => {
   })
 
   // Will receive response when user clicks button.
-  app.post('/interactive', extractUrlencoded, slackVerify, async (req, res) => {
+  app.post('/interactive', verifyUrlencoded, async (req, res) => {
     try {
       const payload = JSON.parse(req.body.payload)
 
