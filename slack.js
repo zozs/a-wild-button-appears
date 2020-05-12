@@ -9,6 +9,16 @@ module.exports = {
   },
   */
 
+  async publishView (instance, user, view) {
+    const web = new WebClient(instance.accessToken)
+    const object = {
+      user_id: user,
+      view
+    }
+
+    return web.views.publish(object)
+  },
+
   async scheduleMessage (instance, timestamp, data) {
     const web = new WebClient(instance.accessToken)
     const object = {

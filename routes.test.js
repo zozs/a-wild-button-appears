@@ -12,6 +12,7 @@ console.debug = jest.fn()
 
 jest.mock('./click')
 jest.mock('./db')
+jest.mock('./events')
 jest.mock('./install')
 jest.mock('@slack/events-api')
 

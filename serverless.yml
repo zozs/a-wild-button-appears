@@ -37,6 +37,9 @@ functions:
         path: /commands
         method: post
     - http:
+        path: /events
+        method: post
+    - http:
         path: /install
         method: get
     - http:

@@ -8,6 +8,7 @@
     "@slack/web-api": "^5.8.0",
     "@slack/webhook": "^5.0.3",
     "aws-sdk": "^2.658.0",
+    "countries-and-timezones": "^2.2.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "http-errors": "^1.7.3",

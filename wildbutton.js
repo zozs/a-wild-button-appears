@@ -1,5 +1,6 @@
 require('dotenv').config()
 const express = require('express')
+const mountEvents = require('./events')
 const mountRoutes = require('./routes')
 
 const app = express()
@@ -24,6 +25,7 @@ const app = express()
  */
 
 module.exports = (clickRecorderHandler) => {
+  mountEvents(app)
   mountRoutes(app, clickRecorderHandler)
   return app
 }
