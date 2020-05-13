@@ -4,6 +4,7 @@ const mockAccess = jest.fn()
 const mockJoin = jest.fn()
 const mockOpen = jest.fn()
 const mockPostMessage = jest.fn()
+const mockPublish = jest.fn()
 const mockScheduleMessage = jest.fn(async () => ({
   ok: true,
   scheduled_message_id: 'Q1298393284'
@@ -23,6 +24,9 @@ const mock = jest.fn().mockImplementation(() => {
       v2: {
         access: mockAccess
       }
+    },
+    views: {
+      publish: mockPublish
     }
   }
 })
@@ -33,5 +37,6 @@ module.exports = {
   mockJoin,
   mockOpen,
   mockPostMessage,
+  mockPublish,
   mockScheduleMessage
 }
