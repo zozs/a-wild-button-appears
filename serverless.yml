@@ -46,15 +46,15 @@ functions:
         path: /interactive
         method: post
     environment:
-      CLICK_RECORDER_LAMBDA: ${self:service}-${self:provider.stage}-wildbutton-click
+      ASYNC_HANDLER_LAMBDA: ${self:service}-${self:provider.stage}-wildbutton-asyncevent
   wildbutton-hourlycheck:
     handler: handler-serverless.hourly
     events:
     - schedule:
         rate: rate(1 hour)
         enabled: true
-  wildbutton-click:
-    handler: handler-serverless.click
+  wildbutton-asyncevent:
+    handler: handler-serverless.asyncEvent
 
 
 plugins:

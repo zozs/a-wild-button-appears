@@ -95,7 +95,7 @@ describe('click handler to', () => {
     expect(handlerMock).toHaveBeenCalledBefore(resMock.send)
     const expected = DateTime.fromISO('2019-01-25T14:26:57.841Z')
     const actual = handlerMock.mock.calls[0][0].timestamp
-    expect(+actual).toBe(+expected)
+    expect(actual).toEqual(expected.toISO())
   })
 
   test('send determining message on first click', async () => {

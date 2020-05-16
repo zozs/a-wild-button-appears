@@ -20,12 +20,12 @@ const app = express()
  *
  * JWT_SECRET: For AWS lambda deployments to secure asynchronous lambda invocations.
  *             Should be a random string
- * CLICK_RECORDER_LAMBDA: Function name of lambda for click registration. Should be
- *                        filled in automatically by serverless.yml
+ * ASYNC_HANDLER_LAMBDA: Function name of lambda for e.g., click registration. Should be
+ *                       filled in automatically by serverless.yml
  */
 
-module.exports = (clickRecorderHandler) => {
-  mountEvents(app)
-  mountRoutes(app, clickRecorderHandler)
+module.exports = (asyncEventHandler) => {
+  mountEvents(app, asyncEventHandler)
+  mountRoutes(app, asyncEventHandler)
   return app
 }

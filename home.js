@@ -1,5 +1,45 @@
 const { getAllTimezones } = require('countries-and-timezones')
 
+const db = require('./db')
+const { publishView } = require('./slack')
+
+function timeZoneGroups () {
+  // Split time zones into several different option groups, since Slack can only have
+  // 100 options in every group. We can _almost_ divide by continent, since all continents
+  // have less than 100 zones, except America (-.-) so we divide it into two.
+  // Special case for America since it has > 100 elements. We divide it into A-M, N-Z.
+
+  // We also filter out a few deprecated timezones.
+  let timeZones = Object.keys(getAllTimezones()).sort()
+
+  // Also skip everything that doesn't contain a / since they seem to be deprecated anyway.
+  // Some continents contain only deprecated aliases. Skip them.
+  timeZones = timeZones.filter(z => z.split('/').length > 1)
+  const deprecated = ['Brazil/', 'Canada/', 'Chile/', 'Mexico/', 'US/', 'Etc/']
+  timeZones = timeZones.filter(z => !deprecated.some(d => z.startsWith(d)))
+
+  const groupedZones = {}
+  for (const zone of timeZones) {
+    let [continent] = zone.split('/', 1)
+    if (continent === 'America') {
+      // Special case, split into two different groups.
+      const firstChar = zone.split('/', 2)[1]
+      if (firstChar < 'K') {
+        continent = 'America (A-J)'
+      } else {
+        continent = 'America (K-Z)'
+      }
+    }
+
+    if (groupedZones[continent] === undefined) {
+      groupedZones[continent] = []
+    }
+    groupedZones[continent].push(zone)
+  }
+
+  return groupedZones
+}
+
 function renderHome (isAdmin) {
   const view = {
     type: 'home',
@@ -15,7 +55,7 @@ function renderHome (isAdmin) {
   }
 
   if (isAdmin) {
-    const timeZones = Object.keys(getAllTimezones()).sort()
+    const timeZones = timeZoneGroups()
 
     // Generates 00:00, 01, ..., 23:30 with 30 minutes increments.
     const times = []
@@ -63,13 +103,19 @@ function renderHome (isAdmin) {
             text: 'Select a time zone',
             emoji: true
           },
-          options: timeZones.map(zone => ({
-            text: {
+          option_groups: Object.entries(timeZones).map(([continent, zones]) => ({
+            label: {
               type: 'plain_text',
-              text: zone,
-              emoji: true
+              text: continent
             },
-            value: `timezone-${zone}`
+            options: zones.map(zone => ({
+              text: {
+                type: 'plain_text',
+                text: zone,
+                emoji: true
+              },
+              value: `timezone-${zone}`
+            }))
           }))
         }
       },
@@ -158,5 +204,13 @@ function renderHome (isAdmin) {
 }
 
 module.exports = {
-  renderHome
+  async publishHome ({ instanceRef, user }) {
+    // Check if user is admin.
+    const isAdmin = true // TODO: implement
+
+    const view = renderHome(isAdmin)
+    const instance = await db.instance(instanceRef)
+    await publishView(instance, user, view)
+  },
+  timeZoneGroups
 }

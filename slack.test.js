@@ -5,7 +5,7 @@ const slack = require('./slack')
 const { Instance } = require('./instance')
 
 const { DateTime } = require('luxon')
-const { WebClient, mockJoin, mockOpen, mockPostMessage, mockScheduleMessage } = require('@slack/web-api')
+const { WebClient, mockJoin, mockOpen, mockPostMessage, mockPublish, mockScheduleMessage } = require('@slack/web-api')
 const { IncomingWebhook, mockSend } = require('@slack/webhook')
 
 jest.mock('./instance')
@@ -20,10 +20,20 @@ beforeEach(() => {
   mockJoin.mockClear()
   mockOpen.mockClear()
   mockPostMessage.mockClear()
+  mockPublish.mockClear()
   mockScheduleMessage.mockClear()
 })
 
 describe('slack api', () => {
+  test('publishes a view', async () => {
+    const user = 'U1337'
+    const view = {}
+    await slack.publishView(testInstance, user, view)
+    expect(WebClient).toHaveBeenCalledTimes(1)
+    expect(mockPublish).toHaveBeenCalledTimes(1)
+    expect(mockPublish.mock.calls[0][0]).toHaveProperty('user_id', user)
+  })
+
   test('schedules a message and returns scheduled message id', async () => {
     const t = DateTime.local()
     const data = {}

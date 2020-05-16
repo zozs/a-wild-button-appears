@@ -149,6 +149,14 @@ module.exports = {
     return instanceData
   },
 
+  /** Returns a full instance object for a given instanceRef, or null if no such instance found */
+  async instance (instanceRef) {
+    const collection = await instanceCollection()
+    return collection.findOne({
+      'team.id': instanceRef
+    })
+  },
+
   /**
    * Returns a list of instance objects for instances that does not have any scheduled
    * message. Never returns instances with channel set to null. Does return instances

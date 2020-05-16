@@ -171,6 +171,51 @@ describe('database', () => {
     })
   })
 
+  describe('instance', () => {
+    beforeEach(async () => {
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      // For each of these tests, initialize the db with some contents.
+      const sharedProperties = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        buttons: []
+      }
+
+      await collection.insertMany([{
+        ...sharedProperties,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        channel: null,
+        scheduled: {}
+      }])
+    })
+
+    test('returns undefined for non-existent instanceRef', async () => {
+      const instance = await db.instance('T404')
+      expect(instance).toBe(null)
+    })
+
+    test('return an object with some contents for existing instance', async () => {
+      const instance = await db.instance('T1')
+      expect(instance).not.toBe(null)
+      expect(instance).toHaveProperty('accessToken', 'xoxop-134234234')
+    })
+  })
+
   describe('instancesWithNoScheduledAnnounces', () => {
     beforeEach(async () => {
       const collection = await db._instanceCollection()

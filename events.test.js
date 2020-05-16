@@ -3,10 +3,11 @@
 const crypto = require('crypto')
 const request = require('supertest')
 
-const { mockPublish } = require('@slack/web-api')
-
+jest.mock('./home')
 jest.mock('./routes')
 
+const { asyncEventRouter } = require('./async-routes')
+const { publishHome } = require('./home')
 const wildbuttonApp = require('./wildbutton')
 
 let app
@@ -16,7 +17,7 @@ beforeAll(() => {
     SLACK_SIGNING_SECRET: 'testsigningsecret'
   })
 
-  app = wildbuttonApp(null)
+  app = wildbuttonApp(asyncEventRouter)
 })
 
 function slackSignature (signingSecret, body) {
@@ -102,6 +103,8 @@ describe('Test event app_home_opened', () => {
         event_time: 1234567890
       })
     expect(response.status).toBe(200)
-    expect(mockPublish).toHaveBeenCalledTimes(1)
+    expect(publishHome).toHaveBeenCalledTimes(1)
+    expect(publishHome.mock.calls[0][0]).toHaveProperty('user', 'U061F7AUR')
+    expect(publishHome.mock.calls[0][0]).toHaveProperty('instanceRef', 'TXXXXXXXX')
   })
 })

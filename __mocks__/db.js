@@ -38,6 +38,20 @@ module.exports = {
   },
   fastestClickTimes () { return [] },
   installInstance: jest.fn(async (instance) => {}),
+  instance: jest.fn(async (instanceRef) => ({
+    name: 'test instance',
+    accessToken: 'xoxp-1234',
+    team: {
+      id: 'T00000000',
+      name: 'testteam'
+    },
+    channel: 'C00000000',
+    manualAnnounce: false,
+    weekdays: 0b1111100, // monday - friday
+    intervalStart: 32400, // 09:00
+    intervalEnd: 57600, // 16:00
+    timezone: 'Europe/Copenhagen'
+  })),
   async instancesWithNoScheduledAnnounces () {
     return [
       {

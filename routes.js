@@ -9,7 +9,7 @@ const { slackVerifyUrlencoded } = require('./slack-request-verifier')
 
 const verifyUrlencoded = slackVerifyUrlencoded({ extended: true })
 
-module.exports = (app, clickRecorderHandler) => {
+module.exports = (app, asyncEventHandler) => {
   app.get('/', (req, res) => {
     res.send('A wild BUTTON appears: API is ready.')
   })
@@ -48,7 +48,7 @@ module.exports = (app, clickRecorderHandler) => {
 
       if (payload.type === 'block_actions' && payload.actions[0].action_id === 'wild_button') {
         // Somebody clicked!
-        await clickCommand(res, payload, clickRecorderHandler)
+        await clickCommand(res, payload, asyncEventHandler)
       } else {
         console.debug(`Got unknown interactive response payload: ${req.body.payload}`)
         res.sendStatus(400)
