@@ -76,7 +76,7 @@ function renderHome (isAdmin) {
       { text: 'Thursday', value: 'weekday-4' },
       { text: 'Friday', value: 'weekday-5' },
       { text: 'Saturday', value: 'weekday-6' },
-      { text: 'Sunday', value: 'weekday-0' }
+      { text: 'Sunday', value: 'weekday-7' }
     ]
 
     const adminBlocks = [
@@ -98,6 +98,7 @@ function renderHome (isAdmin) {
         },
         accessory: {
           type: 'static_select',
+          action_id: 'admin_timezone',
           placeholder: {
             type: 'plain_text',
             text: 'Select a time zone',
@@ -127,6 +128,7 @@ function renderHome (isAdmin) {
         },
         accessory: {
           type: 'multi_static_select',
+          action_id: 'admin_weekdays',
           placeholder: {
             type: 'plain_text',
             text: 'Select weekdays',
@@ -150,6 +152,7 @@ function renderHome (isAdmin) {
         },
         accessory: {
           type: 'static_select',
+          action_id: 'admin_starttime',
           placeholder: {
             type: 'plain_text',
             text: 'Select a start time',
@@ -173,6 +176,7 @@ function renderHome (isAdmin) {
         },
         accessory: {
           type: 'static_select',
+          action_id: 'admin_endtime',
           placeholder: {
             type: 'plain_text',
             text: 'Select an end time',
@@ -186,13 +190,6 @@ function renderHome (isAdmin) {
             },
             value: `end-${t.seconds}`
           }))
-        }
-      },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '_A wild button will appear on Monday, Tuesday, Wednesday, Thursday, and Friday, at a random time between 09:00 and 16:00 in the time zone Europe/Copenhagen._'
         }
       }
     ]

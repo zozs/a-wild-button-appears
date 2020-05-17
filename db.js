@@ -313,6 +313,62 @@ module.exports = {
   recentClickTimes () { throw new Error('not implemented') },
   slowestClickTimes () { throw new Error('not implemented') },
 
+  async setEndTime (instanceRef, seconds) {
+    const collection = await instanceCollection()
+    const result = await collection.updateOne({ 'team.id': instanceRef }, {
+      $set: {
+        intervalEnd: seconds
+      }
+    })
+
+    if (result.matchedCount !== 1) {
+      console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
+      throw new Error(`Failed to set end time, nothing were matched in query! instanceRef: ${instanceRef}`)
+    }
+  },
+
+  async setStartTime (instanceRef, seconds) {
+    const collection = await instanceCollection()
+    const result = await collection.updateOne({ 'team.id': instanceRef }, {
+      $set: {
+        intervalStart: seconds
+      }
+    })
+
+    if (result.matchedCount !== 1) {
+      console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
+      throw new Error(`Failed to set start time, nothing were matched in query! instanceRef: ${instanceRef}`)
+    }
+  },
+
+  async setTimezone (instanceRef, timezone) {
+    const collection = await instanceCollection()
+    const result = await collection.updateOne({ 'team.id': instanceRef }, {
+      $set: {
+        timezone
+      }
+    })
+
+    if (result.matchedCount !== 1) {
+      console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
+      throw new Error(`Failed to set timezone, nothing were matched in query! instanceRef: ${instanceRef}`)
+    }
+  },
+
+  async setWeekdays (instanceRef, weekdays) {
+    const collection = await instanceCollection()
+    const result = await collection.updateOne({ 'team.id': instanceRef }, {
+      $set: {
+        weekdays
+      }
+    })
+
+    if (result.matchedCount !== 1) {
+      console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
+      throw new Error(`Failed to set weekdays, nothing were matched in query! instanceRef: ${instanceRef}`)
+    }
+  },
+
   async storeScheduled (instanceRef, dateTime, messageId) {
     // dateTime is a Luxon DateTime object. We store it as a UTC BSON in the database.
     const timestamp = dateTime.toUTC().toBSON()
@@ -329,7 +385,7 @@ module.exports = {
       }
     })
 
-    if (result.modifiedCount !== 1) {
+    if (result.matchedCount !== 1) {
       console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
       throw new Error(`Failed to stored scheduled, nothing were matched in query! instanceRef: ${instanceRef}`)
     }

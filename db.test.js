@@ -823,6 +823,182 @@ describe('database', () => {
     })
   })
 
+  describe('setEndTime', () => {
+    beforeEach(async () => {
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      // For each of these tests, initialize the db with some contents.
+      const sharedProperties = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        buttons: []
+      }
+
+      await collection.insertMany([{
+        ...sharedProperties,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        channel: null,
+        scheduled: {}
+      }])
+    })
+
+    test('stores time', async () => {
+      await db.setEndTime('T1', 32400)
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T1'
+      })
+
+      expect(instance).toHaveProperty('intervalEnd', 32400)
+    })
+  })
+
+  describe('setStartTime', () => {
+    beforeEach(async () => {
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      // For each of these tests, initialize the db with some contents.
+      const sharedProperties = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        buttons: []
+      }
+
+      await collection.insertMany([{
+        ...sharedProperties,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        channel: null,
+        scheduled: {}
+      }])
+    })
+
+    test('stores time', async () => {
+      await db.setStartTime('T1', 32400)
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T1'
+      })
+
+      expect(instance).toHaveProperty('intervalStart', 32400)
+    })
+  })
+
+  describe('setTimezone', () => {
+    beforeEach(async () => {
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      // For each of these tests, initialize the db with some contents.
+      const sharedProperties = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        buttons: []
+      }
+
+      await collection.insertMany([{
+        ...sharedProperties,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        channel: null,
+        scheduled: {}
+      }])
+    })
+
+    test('stores timezone', async () => {
+      await db.setTimezone('T1', 'Europe/Stockholm')
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T1'
+      })
+
+      expect(instance).toHaveProperty('timezone', 'Europe/Stockholm')
+    })
+  })
+
+  describe('setWeekdays', () => {
+    beforeEach(async () => {
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      // For each of these tests, initialize the db with some contents.
+      const sharedProperties = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        buttons: []
+      }
+
+      await collection.insertMany([{
+        ...sharedProperties,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        channel: null,
+        scheduled: {}
+      }])
+    })
+
+    test('stores weekdays', async () => {
+      await db.setWeekdays('T1', 0b1111100)
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T1'
+      })
+
+      expect(instance).toHaveProperty('weekdays', 0b1111100)
+    })
+  })
+
   describe('storeScheduled', () => {
     beforeEach(async () => {
       // add example instance.

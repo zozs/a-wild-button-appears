@@ -21,6 +21,6 @@ function slackVerifySignedData () {
 }
 
 module.exports = {
-  slackVerifyJson: (opts) => express.json({ ...opts, verify: slackVerifySignedData() }),
-  slackVerifyUrlencoded: (opts) => express.urlencoded({ ...opts, verify: slackVerifySignedData() })
+  slackVerifyJson: (opts) => express.json({ ...opts, limit: '3mb', verify: slackVerifySignedData() }),
+  slackVerifyUrlencoded: (opts) => express.urlencoded({ ...opts, limit: '3mb', verify: slackVerifySignedData() })
 }

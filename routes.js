@@ -2,6 +2,7 @@
 const { click: clickCommand } = require('./click')
 const helpCommand = require('./help')
 const installCommand = require('./install')
+const settings = require('./settings')
 const statsCommand = require('./stats')
 const usageCommand = require('./usage')
 
@@ -41,20 +42,42 @@ module.exports = (app, asyncEventHandler) => {
     }
   })
 
-  // Will receive response when user clicks button.
+  // Will receive response when user clicks button or interacts in some other way, e.g., settings.
   app.post('/interactive', verifyUrlencoded, async (req, res) => {
     try {
       const payload = JSON.parse(req.body.payload)
+      const instanceRef = payload.team.id
 
-      if (payload.type === 'block_actions' && payload.actions[0].action_id === 'wild_button') {
-        // Somebody clicked!
-        await clickCommand(res, payload, asyncEventHandler)
+      if (payload.type === 'block_actions') {
+        for (const action of payload.actions) {
+          switch (action.action_id) {
+            case 'admin_timezone':
+              await settings.setTimezone(res, instanceRef, action)
+              break
+            case 'admin_weekdays':
+              await settings.setWeekdays(res, instanceRef, action)
+              break
+            case 'admin_starttime':
+              await settings.setStartTime(res, instanceRef, action)
+              break
+            case 'admin_endtime':
+              await settings.setEndTime(res, instanceRef, action)
+              break
+            case 'wild_button':
+              await clickCommand(res, payload, asyncEventHandler)
+              break
+            default:
+              console.debug(`Got unknown action_id ${action.action_id}`)
+              res.sendStatus(400)
+              break
+          }
+        }
       } else {
         console.debug(`Got unknown interactive response payload: ${req.body.payload}`)
         res.sendStatus(400)
       }
     } catch (e) {
-      console.error('Failed to register click. Got error:', e)
+      console.error(`Failed to register interactive. Got error: ${e}, in JSON: ${JSON.stringify(e)}`)
       res.sendStatus(500)
     }
   })
