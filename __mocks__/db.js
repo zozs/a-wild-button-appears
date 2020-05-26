@@ -50,7 +50,11 @@ module.exports = {
     weekdays: 0b1111100, // monday - friday
     intervalStart: 32400, // 09:00
     intervalEnd: 57600, // 16:00
-    timezone: 'Europe/Copenhagen'
+    timezone: 'Europe/Copenhagen',
+    authedUser: {
+      id: 'U1337',
+      name: 'yoyo'
+    }
   })),
   async instancesWithNoScheduledAnnounces () {
     return [

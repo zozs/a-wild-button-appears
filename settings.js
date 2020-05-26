@@ -12,25 +12,25 @@ function weekdaysToMask (weekdays) {
 
 module.exports = {
   async setEndTime (res, instanceRef, action) {
-    const seconds = parseInt(action.selected_option.value.match(/^end-(\d+)$/)[1])
+    const seconds = parseInt(action.selected_option.value)
     await db.setEndTime(instanceRef, seconds)
     res.send('')
   },
 
   async setStartTime (res, instanceRef, action) {
-    const seconds = parseInt(action.selected_option.value.match(/^start-(\d+)$/)[1])
+    const seconds = parseInt(action.selected_option.value)
     await db.setStartTime(instanceRef, seconds)
     res.send('')
   },
 
   async setTimezone (res, instanceRef, action) {
-    const timezone = action.selected_option.value.match(/^timezone-(.*)$/)[1]
+    const timezone = action.selected_option.value
     await db.setTimezone(instanceRef, timezone)
     res.send('')
   },
 
   async setWeekdays (res, instanceRef, action) {
-    const selectedWeekdays = action.selected_options.map(e => parseInt(e.value.match(/^weekday-(\d)$/)[1]))
+    const selectedWeekdays = action.selected_options.map(e => parseInt(e.value))
     const weekdayMask = weekdaysToMask(selectedWeekdays)
     await db.setWeekdays(instanceRef, weekdayMask)
     res.send('')

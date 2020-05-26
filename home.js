@@ -3,6 +3,60 @@ const { getAllTimezones } = require('countries-and-timezones')
 const db = require('./db')
 const { publishView } = require('./slack')
 
+function optionTime (seconds) {
+  seconds = parseInt(seconds, 10)
+
+  // Seconds to 00:00 - 23:59 format.
+  const hour = (Math.floor(seconds / 3600)).toString()
+  const minute = (Math.floor(seconds / 60) % 60).toString()
+  const text = ('00' + hour).substr(hour.length) + ':' + ('00' + minute).substr(minute.length)
+
+  return {
+    text: {
+      type: 'plain_text',
+      text,
+      emoji: true
+    },
+    value: `${seconds}`
+  }
+}
+
+function optionTimezone (zone) {
+  return {
+    text: {
+      type: 'plain_text',
+      text: zone,
+      emoji: true
+    },
+    value: zone
+  }
+}
+
+function optionWeekdays (mask) {
+  const weekdays = [
+    { text: 'Monday', value: '1' },
+    { text: 'Tuesday', value: '2' },
+    { text: 'Wednesday', value: '3' },
+    { text: 'Thursday', value: '4' },
+    { text: 'Friday', value: '5' },
+    { text: 'Saturday', value: '6' },
+    { text: 'Sunday', value: '7' }
+  ]
+
+  const weekdayInMask = (weekday, mask) => ((1 << (6 - (weekday - 1))) & mask) !== 0
+
+  // Convert mask to array in a very lazy way
+  const found = weekdays.filter(w => weekdayInMask(parseInt(w.value), mask))
+  return found.map(w => ({
+    text: {
+      type: 'plain_text',
+      text: w.text,
+      emoji: true
+    },
+    value: w.value
+  }))
+}
+
 function timeZoneGroups () {
   // Split time zones into several different option groups, since Slack can only have
   // 100 options in every group. We can _almost_ divide by continent, since all continents
@@ -40,7 +94,7 @@ function timeZoneGroups () {
   return groupedZones
 }
 
-function renderHome (isAdmin) {
+function renderHome (isAdmin, initialSettings) {
   const view = {
     type: 'home',
     blocks: [
@@ -60,24 +114,20 @@ function renderHome (isAdmin) {
     // Generates 00:00, 01, ..., 23:30 with 30 minutes increments.
     const times = []
     for (let seconds = 0; seconds < 86400; seconds += 1800) {
-      const hour = (Math.floor(seconds / 3600)).toString()
-      const minute = (Math.floor(seconds / 60) % 60).toString()
-      times.push({
-        text: ('00' + hour).substr(hour.length) + ':' + ('00' + minute).substr(minute.length),
-        seconds
-      })
+      times.push(seconds)
     }
 
-    // Weekdays
-    const weekdays = [
-      { text: 'Monday', value: 'weekday-1' },
-      { text: 'Tuesday', value: 'weekday-2' },
-      { text: 'Wednesday', value: 'weekday-3' },
-      { text: 'Thursday', value: 'weekday-4' },
-      { text: 'Friday', value: 'weekday-5' },
-      { text: 'Saturday', value: 'weekday-6' },
-      { text: 'Sunday', value: 'weekday-7' }
-    ]
+    // Current settings.
+    let {
+      timezone: initialTimezone,
+      intervalStart: initialStart,
+      intervalEnd: initialEnd,
+      weekdays: initialWeekdaysMask
+    } = initialSettings
+
+    if (initialWeekdaysMask === undefined && initialWeekdaysMask === null) {
+      initialWeekdaysMask = 0
+    }
 
     const adminBlocks = [
       {
@@ -109,15 +159,9 @@ function renderHome (isAdmin) {
               type: 'plain_text',
               text: continent
             },
-            options: zones.map(zone => ({
-              text: {
-                type: 'plain_text',
-                text: zone,
-                emoji: true
-              },
-              value: `timezone-${zone}`
-            }))
-          }))
+            options: zones.map(optionTimezone)
+          })),
+          ...(initialTimezone && { initial_option: optionTimezone(initialTimezone) })
         }
       },
       {
@@ -134,14 +178,8 @@ function renderHome (isAdmin) {
             text: 'Select weekdays',
             emoji: true
           },
-          options: weekdays.map(w => ({
-            text: {
-              type: 'plain_text',
-              text: w.text,
-              emoji: true
-            },
-            value: w.value
-          }))
+          options: optionWeekdays(0b1111111), // All weekdays
+          initial_options: optionWeekdays(initialWeekdaysMask)
         }
       },
       {
@@ -158,14 +196,8 @@ function renderHome (isAdmin) {
             text: 'Select a start time',
             emoji: true
           },
-          options: times.map(t => ({
-            text: {
-              type: 'plain_text',
-              text: t.text,
-              emoji: true
-            },
-            value: `start-${t.seconds}`
-          }))
+          options: times.map(optionTime),
+          ...(initialStart && { initial_option: optionTime(initialStart) })
         }
       },
       {
@@ -182,14 +214,8 @@ function renderHome (isAdmin) {
             text: 'Select an end time',
             emoji: true
           },
-          options: times.map(t => ({
-            text: {
-              type: 'plain_text',
-              text: t.text,
-              emoji: true
-            },
-            value: `end-${t.seconds}`
-          }))
+          options: times.map(optionTime),
+          ...(initialEnd && { initial_option: optionTime(initialEnd) })
         }
       }
     ]
@@ -202,11 +228,14 @@ function renderHome (isAdmin) {
 
 module.exports = {
   async publishHome ({ instanceRef, user }) {
-    // Check if user is admin.
-    const isAdmin = true // TODO: implement
-
-    const view = renderHome(isAdmin)
+    // Get current settings.
     const instance = await db.instance(instanceRef)
+
+    // Check if user is admin.
+    const isAdmin = instance.authedUser.id === user
+
+    // The initialSettings object matches the one from the db.
+    const view = renderHome(isAdmin, instance)
     await publishView(instance, user, view)
   },
   timeZoneGroups

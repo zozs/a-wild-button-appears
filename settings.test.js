@@ -22,7 +22,7 @@ describe('end time', () => {
           text: '16:30',
           emoji: true
         },
-        value: 'end-59400'
+        value: '59400'
       }
     }
     const res = { send: jest.fn() }
@@ -50,7 +50,7 @@ describe('start time', () => {
           text: '00:30',
           emoji: true
         },
-        value: 'start-1800'
+        value: '1800'
       }
     }
     const res = { send: jest.fn() }
@@ -73,7 +73,7 @@ describe('start time', () => {
           text: '09:00',
           emoji: true
         },
-        value: 'start-32400'
+        value: '32400'
       }
     }
     const res = { send: jest.fn() }
@@ -102,7 +102,7 @@ describe('timezone setting', () => {
           text: 'Europe/Copenhagen',
           emoji: true
         },
-        value: 'timezone-Europe/Copenhagen'
+        value: 'Europe/Copenhagen'
       }
     }
     const res = { send: jest.fn() }
@@ -126,13 +126,13 @@ describe('weekday setting', () => {
       type: 'multi_static_select',
       action_id: 'admin_weekdays',
       selected_options: [
-        { value: 'weekday-1' },
-        { value: 'weekday-2' },
-        { value: 'weekday-3' },
-        { value: 'weekday-4' },
-        { value: 'weekday-5' },
-        { value: 'weekday-6' },
-        { value: 'weekday-7' }
+        { value: '1' },
+        { value: '2' },
+        { value: '3' },
+        { value: '4' },
+        { value: '5' },
+        { value: '6' },
+        { value: '7' }
       ]
     }
     const res = { send: jest.fn() }
@@ -150,11 +150,11 @@ describe('weekday setting', () => {
       type: 'multi_static_select',
       action_id: 'admin_weekdays',
       selected_options: [
-        { value: 'weekday-1' },
-        { value: 'weekday-2' },
-        { value: 'weekday-3' },
-        { value: 'weekday-4' },
-        { value: 'weekday-5' }
+        { value: '1' },
+        { value: '2' },
+        { value: '3' },
+        { value: '4' },
+        { value: '5' }
       ]
     }
     const res = { send: jest.fn() }
