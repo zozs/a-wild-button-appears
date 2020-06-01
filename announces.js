@@ -92,6 +92,16 @@ function randomInt (a = 1, b = 0) {
   return Math.floor(lower + Math.random() * (upper - lower + 1))
 }
 
+async function reschedule ({ instanceRef }) {
+  // need to first set schedule to null in db.
+
+  // then remove slack scheduled button if it exists.
+
+  // then make a new hourly check.
+
+  // think about if it is a problem with concurrency
+}
+
 function weekdayInMask (weekday, mask) {
   // weekday is 1 for Monday, 7 for Sunday.
   // mask is of form 0b1111100 for Monday-Friday.
@@ -100,5 +110,6 @@ function weekdayInMask (weekday, mask) {
 
 module.exports = {
   hourlyCheck,
-  nextAnnounce
+  nextAnnounce,
+  reschedule
 }
