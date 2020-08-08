@@ -5,7 +5,7 @@ const slack = require('./slack')
 const { Instance } = require('./instance')
 
 const { DateTime } = require('luxon')
-const { WebClient, mockJoin, mockOpen, mockPostMessage, mockPublish, mockScheduleMessage } = require('@slack/web-api')
+const { WebClient, mockDeleteScheduledMessage, mockJoin, mockOpen, mockPostMessage, mockPublish, mockScheduleMessage } = require('@slack/web-api')
 const { IncomingWebhook, mockSend } = require('@slack/webhook')
 
 jest.mock('./instance')
@@ -78,6 +78,14 @@ describe('slack api', () => {
     expect(mockScheduleMessage).toHaveBeenCalledTimes(2)
     expect(mockScheduleMessage.mock.calls[0][0]).toHaveProperty('post_at', Math.floor(t.toSeconds()))
     expect(mockScheduleMessage.mock.calls[1][0]).toHaveProperty('post_at', Math.floor(t.toSeconds()))
+  })
+
+  test('deletes a scheduled message', async () => {
+    await slack.unscheduleMessage(testInstance, 'testid', 'channel')
+    expect(WebClient).toHaveBeenCalledTimes(1)
+    expect(mockDeleteScheduledMessage).toHaveBeenCalledTimes(1)
+    expect(mockDeleteScheduledMessage.mock.calls[0][0]).toHaveProperty('channel', 'channel')
+    expect(mockDeleteScheduledMessage.mock.calls[0][0]).toHaveProperty('scheduled_message_id', 'testid')
   })
 
   test('replacing response has replace_original set', async () => {

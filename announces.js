@@ -93,13 +93,26 @@ function randomInt (a = 1, b = 0) {
 }
 
 async function reschedule ({ instanceRef }) {
-  // need to first set schedule to null in db.
+  const instance = await db.instance(instanceRef)
+  const scheduled = await db.scheduled(instanceRef)
 
-  // then remove slack scheduled button if it exists.
+  // Remove slack scheduled button if it exists.
+  if (scheduled !== null) {
+    try {
+      await slack.unscheduleMessage(instance, scheduled.messageId, instance.channel)
+    } catch (e) {
+      // silently ignore if we use an outdated scheduled message id.
+      if (e.data.error !== 'invalid_scheduled_message_id') {
+        throw e
+      }
+    }
+  }
 
-  // then make a new hourly check.
+  // Then set schedule to null in database.
+  await db.storeScheduled(instanceRef, null, null)
 
-  // think about if it is a problem with concurrency
+  // Now, we just wait for the next "hourly" check for happen to solve the unscheduled button.
+  // By doing this the lazy way, we don't have to worry about concurrency issues with scheduling.
 }
 
 function weekdayInMask (weekday, mask) {

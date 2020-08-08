@@ -1,6 +1,7 @@
 /* global jest */
 
 const mockAccess = jest.fn()
+const mockDeleteScheduledMessage = jest.fn()
 const mockJoin = jest.fn()
 const mockOpen = jest.fn()
 const mockPostMessage = jest.fn()
@@ -13,6 +14,7 @@ const mockScheduleMessage = jest.fn(async () => ({
 const mock = jest.fn().mockImplementation(() => {
   return {
     chat: {
+      deleteScheduledMessage: mockDeleteScheduledMessage,
       postMessage: mockPostMessage,
       scheduleMessage: mockScheduleMessage
     },
@@ -34,6 +36,7 @@ const mock = jest.fn().mockImplementation(() => {
 module.exports = {
   WebClient: mock,
   mockAccess,
+  mockDeleteScheduledMessage,
   mockJoin,
   mockOpen,
   mockPostMessage,

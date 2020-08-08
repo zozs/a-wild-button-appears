@@ -999,6 +999,77 @@ describe('database', () => {
     })
   })
 
+  describe('scheduled', () => {
+    beforeEach(async () => {
+      // add example instance.
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      const sharedProperties = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        channel: null,
+        buttonsVersion: 1,
+        buttons: []
+      }
+
+      await collection.insertMany([{
+        ...sharedProperties,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        scheduled: {}
+      }, {
+        ...sharedProperties,
+        team: {
+          id: 'T2',
+          name: 'Team2'
+        },
+        scheduled: {
+          timestamp: DateTime.fromISO('2020-04-12T13:22:00.000Z').toUTC().toBSON(),
+          messageId: 'before'
+        }
+      }, {
+        ...sharedProperties,
+        team: {
+          id: 'T3',
+          name: 'Team3'
+        },
+        scheduled: {
+          timestamp: DateTime.fromISO('2020-04-12T13:22:00.000Z').toUTC().toBSON(),
+          messageId: null
+        }
+      }])
+    })
+
+    test('returns null when scheduled is empty', async () => {
+      const scheduled = await db.scheduled('T1')
+      expect(scheduled).toBeNull()
+    })
+
+    test('returns null when scheduled does not have messageId', async () => {
+      const scheduled = await db.scheduled('T3')
+      expect(scheduled).toBeNull()
+    })
+
+    test('returns data when scheduled', async () => {
+      const scheduled = await db.scheduled('T2')
+      expect(scheduled).toHaveProperty('timestamp', DateTime.fromISO('2020-04-12T13:22:00.000Z').toUTC().toBSON())
+      expect(scheduled).toHaveProperty('messageId', 'before')
+    })
+  })
+
   describe('storeScheduled', () => {
     beforeEach(async () => {
       // add example instance.
@@ -1073,6 +1144,17 @@ describe('database', () => {
         timestamp: timestamp.toJSDate(),
         messageId
       })
+    })
+
+    test('clear schedule', async () => {
+      await db.storeScheduled('T2', null, null)
+
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T2'
+      })
+
+      expect(instance.scheduled).toEqual({})
     })
   })
 })

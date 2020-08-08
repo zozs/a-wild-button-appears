@@ -52,16 +52,16 @@ module.exports = (app, asyncEventHandler) => {
         for (const action of payload.actions) {
           switch (action.action_id) {
             case 'admin_timezone':
-              await settings.setTimezone(res, instanceRef, action)
+              await settings.setTimezone(res, instanceRef, action, asyncEventHandler)
               break
             case 'admin_weekdays':
-              await settings.setWeekdays(res, instanceRef, action)
+              await settings.setWeekdays(res, instanceRef, action, asyncEventHandler)
               break
             case 'admin_starttime':
-              await settings.setStartTime(res, instanceRef, action)
+              await settings.setStartTime(res, instanceRef, action, asyncEventHandler)
               break
             case 'admin_endtime':
-              await settings.setEndTime(res, instanceRef, action)
+              await settings.setEndTime(res, instanceRef, action, asyncEventHandler)
               break
             case 'wild_button':
               await clickCommand(res, payload, asyncEventHandler)

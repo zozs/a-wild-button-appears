@@ -51,7 +51,7 @@ functions:
     handler: handler-serverless.hourly
     events:
     - schedule:
-        rate: rate(1 hour)
+        rate: rate(10 minutes)
         enabled: true
   wildbutton-asyncevent:
     handler: handler-serverless.asyncEvent

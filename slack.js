@@ -61,5 +61,13 @@ module.exports = {
       ...data,
       replace_original: true
     })
+  },
+
+  async unscheduleMessage (instance, messageId, channel) {
+    const web = new WebClient(instance.accessToken)
+    await web.chat.deleteScheduledMessage({
+      channel,
+      scheduled_message_id: messageId
+    })
   }
 }

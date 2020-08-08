@@ -22,21 +22,21 @@ module.exports = {
   async setEndTime (res, instanceRef, action, asyncEventHandler) {
     const seconds = parseInt(action.selected_option.value)
     await db.setEndTime(instanceRef, seconds)
-    reschedule(asyncEventHandler, instanceRef)
+    await reschedule(asyncEventHandler, instanceRef)
     res.send('')
   },
 
   async setStartTime (res, instanceRef, action, asyncEventHandler) {
     const seconds = parseInt(action.selected_option.value)
     await db.setStartTime(instanceRef, seconds)
-    reschedule(asyncEventHandler, instanceRef)
+    await reschedule(asyncEventHandler, instanceRef)
     res.send('')
   },
 
   async setTimezone (res, instanceRef, action, asyncEventHandler) {
     const timezone = action.selected_option.value
     await db.setTimezone(instanceRef, timezone)
-    reschedule(asyncEventHandler, instanceRef)
+    await reschedule(asyncEventHandler, instanceRef)
     res.send('')
   },
 
@@ -44,7 +44,7 @@ module.exports = {
     const selectedWeekdays = action.selected_options.map(e => parseInt(e.value))
     const weekdayMask = weekdaysToMask(selectedWeekdays)
     await db.setWeekdays(instanceRef, weekdayMask)
-    reschedule(asyncEventHandler, instanceRef)
+    await reschedule(asyncEventHandler, instanceRef)
     res.send('')
   }
 }

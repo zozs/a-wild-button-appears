@@ -369,21 +369,46 @@ module.exports = {
     }
   },
 
+  async scheduled (instanceRef) {
+    const collection = await instanceCollection()
+    const instance = await collection.findOne({
+      'team.id': instanceRef
+    })
+
+    const { scheduled: { timestamp, messageId } } = instance
+    if (timestamp && messageId) {
+      return { timestamp, messageId }
+    } else {
+      return null
+    }
+  },
+
   async storeScheduled (instanceRef, dateTime, messageId) {
-    // dateTime is a Luxon DateTime object. We store it as a UTC BSON in the database.
-    const timestamp = dateTime.toUTC().toBSON()
     const collection = await instanceCollection()
 
     console.debug(`Storing scheduled time ${dateTime} for instance ${instanceRef}`)
 
-    const result = await collection.updateOne({ 'team.id': instanceRef }, {
-      $set: {
-        scheduled: {
-          timestamp,
-          messageId
+    let result
+    if (dateTime === null && messageId === null) {
+      // If both dateTime and messageId is null, clear scheduled instead.
+      result = await collection.updateOne({ 'team.id': instanceRef }, {
+        $set: {
+          scheduled: {}
         }
-      }
-    })
+      })
+    } else {
+      // Otherwise set it as usual.
+      // dateTime is a Luxon DateTime object. We store it as a UTC BSON in the database.
+      const timestamp = dateTime.toUTC().toBSON()
+      result = await collection.updateOne({ 'team.id': instanceRef }, {
+        $set: {
+          scheduled: {
+            timestamp,
+            messageId
+          }
+        }
+      })
+    }
 
     if (result.matchedCount !== 1) {
       console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)

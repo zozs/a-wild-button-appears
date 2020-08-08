@@ -79,6 +79,7 @@ module.exports = {
   setStartTime: jest.fn(async (instanceRef, timezone) => {}),
   setTimezone: jest.fn(async (instanceRef, timezone) => {}),
   setWeekdays: jest.fn(async (instanceRef, weekdayMask) => {}),
+  scheduled: jest.fn(async (instanceRef) => {}),
   storeScheduled: jest.fn(async (instanceRef, timestamp, messageId) => {}),
   lastAnnounce: jest.fn(async (instanceRef, now) => DateTime.fromISO('2020-01-02T12:34:56.000Z').toUTC()),
   recordClick: jest.fn(async (instanceRef, uuid, user, time) => {

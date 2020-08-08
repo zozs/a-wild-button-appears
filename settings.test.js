@@ -4,7 +4,10 @@ const settings = require('./settings')
 
 const db = require('./db')
 
+jest.mock('./announces')
 jest.mock('./db')
+
+const asyncEventHandler = jest.fn(async () => {})
 
 describe('end time', () => {
   beforeEach(() => {
@@ -26,7 +29,7 @@ describe('end time', () => {
       }
     }
     const res = { send: jest.fn() }
-    await settings.setEndTime(res, instanceRef, action)
+    await settings.setEndTime(res, instanceRef, action, asyncEventHandler)
     expect(db.setEndTime).toHaveBeenCalledTimes(1)
     expect(db.setEndTime.mock.calls[0][0]).toBe(instanceRef)
     expect(db.setEndTime.mock.calls[0][1]).toBe(59400)
@@ -55,7 +58,7 @@ describe('start time', () => {
     }
     const res = { send: jest.fn() }
 
-    await settings.setStartTime(res, instanceRef, action)
+    await settings.setStartTime(res, instanceRef, action, asyncEventHandler)
     expect(db.setStartTime).toHaveBeenCalledTimes(1)
     expect(db.setStartTime.mock.calls[0][0]).toBe(instanceRef)
     expect(db.setStartTime.mock.calls[0][1]).toBe(1800)
@@ -78,7 +81,7 @@ describe('start time', () => {
     }
     const res = { send: jest.fn() }
 
-    await settings.setStartTime(res, instanceRef, action)
+    await settings.setStartTime(res, instanceRef, action, asyncEventHandler)
     expect(db.setStartTime).toHaveBeenCalledTimes(1)
     expect(db.setStartTime.mock.calls[0][0]).toBe(instanceRef)
     expect(db.setStartTime.mock.calls[0][1]).toBe(32400)
@@ -107,7 +110,7 @@ describe('timezone setting', () => {
     }
     const res = { send: jest.fn() }
 
-    await settings.setTimezone(res, instanceRef, action)
+    await settings.setTimezone(res, instanceRef, action, asyncEventHandler)
     expect(db.setTimezone).toHaveBeenCalledTimes(1)
     expect(db.setTimezone.mock.calls[0][0]).toBe(instanceRef)
     expect(db.setTimezone.mock.calls[0][1]).toBe('Europe/Copenhagen')
@@ -137,7 +140,7 @@ describe('weekday setting', () => {
     }
     const res = { send: jest.fn() }
 
-    await settings.setWeekdays(res, instanceRef, action)
+    await settings.setWeekdays(res, instanceRef, action, asyncEventHandler)
     expect(db.setWeekdays).toHaveBeenCalledTimes(1)
     expect(db.setWeekdays.mock.calls[0][0]).toBe(instanceRef)
     expect(db.setWeekdays.mock.calls[0][1]).toBe(0b1111111)
@@ -159,7 +162,7 @@ describe('weekday setting', () => {
     }
     const res = { send: jest.fn() }
 
-    await settings.setWeekdays(res, instanceRef, action)
+    await settings.setWeekdays(res, instanceRef, action, asyncEventHandler)
     expect(db.setWeekdays).toHaveBeenCalledTimes(1)
     expect(db.setWeekdays.mock.calls[0][0]).toBe(instanceRef)
     expect(db.setWeekdays.mock.calls[0][1]).toBe(0b1111100)
@@ -175,7 +178,7 @@ describe('weekday setting', () => {
     }
     const res = { send: jest.fn() }
 
-    await settings.setWeekdays(res, instanceRef, action)
+    await settings.setWeekdays(res, instanceRef, action, asyncEventHandler)
     expect(db.setWeekdays).toHaveBeenCalledTimes(1)
     expect(db.setWeekdays.mock.calls[0][0]).toBe(instanceRef)
     expect(db.setWeekdays.mock.calls[0][1]).toBe(0b0000000)
