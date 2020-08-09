@@ -2,13 +2,12 @@
 
 const slack = require('./slack')
 
-const { Instance } = require('./instance')
+const { Instance } = require('./__mocks__/instance')
 
 const { DateTime } = require('luxon')
 const { WebClient, mockDeleteScheduledMessage, mockJoin, mockOpen, mockPostMessage, mockPublish, mockScheduleMessage } = require('@slack/web-api')
 const { IncomingWebhook, mockSend } = require('@slack/webhook')
 
-jest.mock('./instance')
 jest.mock('@slack/web-api')
 
 const testInstance = new Instance()

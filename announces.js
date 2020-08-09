@@ -17,8 +17,8 @@ async function hourlyCheck () {
     const now = DateTime.local()
     const timestamp = await nextAnnounce(instance, now)
 
-    const { scheduled_message_id: messageId } = await slack.scheduleMessage(instance, timestamp, button(timestamp))
-    await db.storeScheduled(instanceRef, timestamp, messageId)
+    const { scheduled_message_id: messageId, channel } = await slack.scheduleMessage(instance, timestamp, button(timestamp))
+    await db.storeScheduled(instanceRef, timestamp, messageId, channel)
   }
 }
 
@@ -99,7 +99,7 @@ async function reschedule ({ instanceRef }) {
   // Remove slack scheduled button if it exists.
   if (scheduled !== null) {
     try {
-      await slack.unscheduleMessage(instance, scheduled.messageId, instance.channel)
+      await slack.unscheduleMessage(instance, scheduled.messageId, scheduled.channel)
     } catch (e) {
       // silently ignore if we use an outdated scheduled message id.
       if (e.data.error !== 'invalid_scheduled_message_id') {
@@ -109,7 +109,7 @@ async function reschedule ({ instanceRef }) {
   }
 
   // Then set schedule to null in database.
-  await db.storeScheduled(instanceRef, null, null)
+  await db.storeScheduled(instanceRef, null, null, null)
 
   // Now, we just wait for the next "hourly" check for happen to solve the unscheduled button.
   // By doing this the lazy way, we don't have to worry about concurrency issues with scheduling.

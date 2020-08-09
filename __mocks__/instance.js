@@ -4,15 +4,11 @@
  * The structure of the Instance object in this file should always match the one in /instance.js
  * Otherwise something is wrong and things will get sad :(
  */
+
+const { DateTime } = require('luxon')
+
 class Instance {
   constructor (other) {
-    if (other !== undefined) {
-      // set properties from other object.
-      for (const [key, value] of Object.entries(other)) {
-        this[key] = value
-      }
-    }
-
     this.accessToken = 'xoxb-17653672481-19874698323-pdFZKVeTuE8sk7oOcBrzbqgy'
     this.team = {
       id: 'T9TK3CUKW',
@@ -31,8 +27,16 @@ class Instance {
       id: 'U1234'
     }
     this.scheduled = {
-      timestamp: 1582738633,
-      messageId: ''
+      timestamp: DateTime.fromMillis(1582738633 * 1000),
+      messageId: '',
+      channel: ''
+    }
+
+    if (other !== undefined) {
+      // set properties from other object.
+      for (const [key, value] of Object.entries(other)) {
+        this[key] = value
+      }
     }
   }
 }

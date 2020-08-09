@@ -7,11 +7,10 @@ const button = require('./button')
 const db = require('./db')
 const slack = require('./slack')
 
-const { Instance } = require('./instance')
+const { Instance } = require('./__mocks__/instance')
 
 jest.mock('./button')
 jest.mock('./db')
-jest.mock('./instance')
 jest.mock('./slack')
 
 expect.extend({
@@ -66,7 +65,8 @@ describe('hourly check', () => {
   test('causes message to be scheduled for non-scheduled instances', async () => {
     slack.scheduleMessage.mockImplementation(async () => ({
       scheduled_message_id: 'Q1298393284',
-      post_at: '1562180400'
+      post_at: '1562180400',
+      channel: testInstance.channel
     }))
 
     button.mockImplementation(() => ({
@@ -85,6 +85,7 @@ describe('hourly check', () => {
     expect(db.storeScheduled.mock.calls[0][0]).toBe('T00000000')
     expect(db.storeScheduled.mock.calls[0][1]).toBeDefined()
     expect(db.storeScheduled.mock.calls[0][2]).toBe('Q1298393284')
+    expect(db.storeScheduled.mock.calls[0][3]).toBe(testInstance.channel)
   })
 })
 
@@ -214,10 +215,12 @@ describe('reschedule', () => {
     const zone = testInstance.timezone
     const timestamp = DateTime.fromISO('2020-08-08T18:00:00', { zone })
     const messageId = 'msg1'
+    const channel = 'random_channel_not_in_testInstance'
 
     db.scheduled.mockImplementationOnce(async (instanceRef) => ({
       timestamp,
-      messageId
+      messageId,
+      channel
     }))
 
     await reschedule({ instanceRef: testInstance.team.id })
@@ -226,11 +229,12 @@ describe('reschedule', () => {
     expect(db.storeScheduled.mock.calls[0][0]).toBe(testInstance.team.id)
     expect(db.storeScheduled.mock.calls[0][1]).toBe(null)
     expect(db.storeScheduled.mock.calls[0][2]).toBe(null)
+    expect(db.storeScheduled.mock.calls[0][3]).toBe(null)
 
     expect(slack.unscheduleMessage).toHaveBeenCalledTimes(1)
     expect(slack.unscheduleMessage.mock.calls[0][0]).toHaveProperty('accessToken')
     expect(slack.unscheduleMessage.mock.calls[0][1]).toBe(messageId)
-    expect(slack.unscheduleMessage.mock.calls[0][2]).toBe(testInstance.channel)
+    expect(slack.unscheduleMessage.mock.calls[0][2]).toBe(channel)
   })
 
   test('does not freak out when slack scheduled button does not exist in database', async () => {
@@ -242,6 +246,7 @@ describe('reschedule', () => {
     expect(db.storeScheduled.mock.calls[0][0]).toBe(testInstance.team.id)
     expect(db.storeScheduled.mock.calls[0][1]).toBe(null)
     expect(db.storeScheduled.mock.calls[0][2]).toBe(null)
+    expect(db.storeScheduled.mock.calls[0][3]).toBe(null)
 
     expect(slack.unscheduleMessage).toHaveBeenCalledTimes(0)
   })
@@ -255,7 +260,8 @@ describe('reschedule', () => {
 
     db.scheduled.mockImplementationOnce(async (instanceRef) => ({
       timestamp,
-      messageId
+      messageId,
+      channel: testInstance.channel
     }))
 
     await reschedule({ instanceRef: testInstance.team.id })
@@ -264,6 +270,7 @@ describe('reschedule', () => {
     expect(db.storeScheduled.mock.calls[0][0]).toBe(testInstance.team.id)
     expect(db.storeScheduled.mock.calls[0][1]).toBe(null)
     expect(db.storeScheduled.mock.calls[0][2]).toBe(null)
+    expect(db.storeScheduled.mock.calls[0][3]).toBe(null)
 
     expect(slack.unscheduleMessage).toHaveBeenCalledTimes(1)
     expect(slack.unscheduleMessage.mock.calls[0][0]).toHaveProperty('accessToken')

@@ -5,10 +5,9 @@ const install = require('./install')
 const db = require('./db')
 const slack = require('./slack')
 const { WebClient, mockAccess } = require('@slack/web-api')
-const { Instance } = require('./instance')
+const { Instance } = require('./__mocks__/instance')
 
 jest.mock('./db')
-jest.mock('./instance')
 jest.mock('@slack/web-api')
 jest.mock('./slack')
 

@@ -4,6 +4,9 @@ const { statsBlocks, statsCommand } = require('./stats')
 
 jest.mock('./db')
 
+// silence console.debug
+console.debug = jest.fn()
+
 describe('stats command', () => {
   test('calls send on res object', async () => {
     const mock = { send: jest.fn() }

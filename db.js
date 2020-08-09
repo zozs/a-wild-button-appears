@@ -68,6 +68,7 @@ function connectMongo () {
  *  scheduled: {
  *    timestamp: '1982-05-25T00:00:00.000Z', // but this is stored as a BSON datetime type.
  *    messageId: '',
+ *    channel: '', // the channel it was scheduled to originally (needed for removal)
  *  },
  *  buttonsVersion: 1, // used for optimistic concurrency control in certain cases.
  *  buttons: [
@@ -403,9 +404,9 @@ module.exports = {
       'team.id': instanceRef
     })
 
-    const { scheduled: { timestamp, messageId } } = instance
+    const { scheduled: { timestamp, messageId, channel } } = instance
     if (timestamp && messageId) {
-      return { timestamp, messageId }
+      return { timestamp, messageId, channel }
     } else {
       return null
     }
@@ -446,7 +447,7 @@ module.exports = {
     return winningClickTimes.slice(0, maxCount)
   },
 
-  async storeScheduled (instanceRef, dateTime, messageId) {
+  async storeScheduled (instanceRef, dateTime, messageId, channel) {
     const collection = await instanceCollection()
 
     console.debug(`Storing scheduled time ${dateTime} for instance ${instanceRef}`)
@@ -467,7 +468,8 @@ module.exports = {
         $set: {
           scheduled: {
             timestamp,
-            messageId
+            messageId,
+            channel
           }
         }
       })

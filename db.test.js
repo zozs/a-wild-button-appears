@@ -32,9 +32,7 @@ afterAll(async () => {
 console.debug = jest.fn()
 
 const db = require('./db')
-const { Instance } = require('./instance')
-
-jest.mock('./instance')
+const { Instance } = require('./__mocks__/instance')
 
 describe('database', () => {
   beforeEach(async () => {
@@ -458,7 +456,8 @@ describe('database', () => {
         channel: null,
         scheduled: {
           timestamp: DateTime.fromISO('1999-05-25T00:00:00.000Z').toUTC().toBSON(), // this time has definitively passed.
-          messageId: ''
+          messageId: '',
+          channel: 'C1'
         }
       }, {
         ...sharedProperties,
@@ -469,7 +468,8 @@ describe('database', () => {
         channel: 'C2',
         scheduled: {
           timestamp: DateTime.fromISO('1999-05-25T00:00:00.000Z').toUTC().toBSON(), // this time has definitively passed.
-          messageId: ''
+          messageId: '',
+          channel: 'C1'
         }
       }, {
         ...sharedProperties,
@@ -480,7 +480,8 @@ describe('database', () => {
         channel: 'C3',
         scheduled: {
           timestamp: DateTime.fromISO('2037-05-25T00:00:00.000Z').toUTC().toBSON(), // this time has definitively passed.
-          messageId: ''
+          messageId: '',
+          channel: 'C1'
         }
       }, {
         ...sharedProperties,
@@ -599,7 +600,8 @@ describe('database', () => {
         },
         scheduled: {
           timestamp: DateTime.fromISO('2020-05-25T00:00:00.000Z').toUTC().toBSON(),
-          messageId: ''
+          messageId: '',
+          channel: 'C1'
         },
         buttons: [
           {
@@ -625,7 +627,8 @@ describe('database', () => {
         },
         scheduled: {
           timestamp: DateTime.fromISO('2020-05-25T00:00:00.000Z').toUTC().toBSON(),
-          messageId: ''
+          messageId: '',
+          channel: 'C1'
         },
         buttons: []
       }, { // no scheduled time, no buttons.
@@ -1249,7 +1252,8 @@ describe('database', () => {
         },
         scheduled: {
           timestamp: DateTime.fromISO('2020-04-12T13:22:00.000Z').toUTC().toBSON(),
-          messageId: 'before'
+          messageId: 'before',
+          channel: 'C1'
         }
       }, {
         ...sharedProperties,
@@ -1259,7 +1263,8 @@ describe('database', () => {
         },
         scheduled: {
           timestamp: DateTime.fromISO('2020-04-12T13:22:00.000Z').toUTC().toBSON(),
-          messageId: null
+          messageId: null,
+          channel: 'C1'
         }
       }])
     })
@@ -1430,7 +1435,8 @@ describe('database', () => {
         },
         scheduled: {
           timestamp: DateTime.fromISO('2020-04-12T13:22:00.000Z').toUTC().toBSON(),
-          messageId: 'before'
+          messageId: 'before',
+          channel: 'C1'
         }
       }])
     })
@@ -1438,7 +1444,8 @@ describe('database', () => {
     test('update existing schedule', async () => {
       const messageId = 'after'
       const timestamp = DateTime.local()
-      await db.storeScheduled('T2', timestamp, messageId)
+      const channel = 'c1'
+      await db.storeScheduled('T2', timestamp, messageId, channel)
 
       const collection = await db._instanceCollection()
       const instance = await collection.findOne({
@@ -1447,14 +1454,16 @@ describe('database', () => {
 
       expect(instance.scheduled).toEqual({
         timestamp: timestamp.toJSDate(),
-        messageId
+        messageId,
+        channel
       })
     })
 
     test('set new schedule', async () => {
       const messageId = 'after'
       const timestamp = DateTime.local()
-      await db.storeScheduled('T1', timestamp, messageId)
+      const channel = 'c2'
+      await db.storeScheduled('T1', timestamp, messageId, channel)
 
       const collection = await db._instanceCollection()
       const instance = await collection.findOne({
@@ -1463,12 +1472,13 @@ describe('database', () => {
 
       expect(instance.scheduled).toEqual({
         timestamp: timestamp.toJSDate(),
-        messageId
+        messageId,
+        channel
       })
     })
 
     test('clear schedule', async () => {
-      await db.storeScheduled('T2', null, null)
+      await db.storeScheduled('T2', null, null, null)
 
       const collection = await db._instanceCollection()
       const instance = await collection.findOne({
