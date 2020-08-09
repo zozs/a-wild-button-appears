@@ -25,11 +25,7 @@ module.exports = (app, asyncEventHandler) => {
     // and trigger ID
     console.debug('Got slash command with text:', body.text)
     try {
-      if (body.text === 'announce' && process.env.ALLOW_MANUAL_ANNOUNCE === 'yes') { // TODO: check with db
-        // res.send('')
-        throw new Error('not yet implemented')
-        // await announceCommand(new Date().toISOString())
-      } else if (body.text === 'stats') {
+      if (body.text === 'stats') {
         await statsCommand(res)
       } else if (body.text === 'help') {
         await helpCommand(res)

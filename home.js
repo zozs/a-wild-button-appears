@@ -102,7 +102,7 @@ function renderHome (isAdmin, initialSettings) {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: 'A message *with some bold text* and _some italicized text_.'
+          text: 'Here you can configure wildbutton. This can only be done by admins.'
         }
       }
     ]
