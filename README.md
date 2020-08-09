@@ -20,7 +20,22 @@ Install the bot, and then proceed by waiting for a wild BUTTON to appear.
 
 ### Installation
 
-This section needs to be written :).
+#### Install with my deployed instance
+
+Coming soon :)
+
+#### Deploy own instance
+
+Configure new Slack app with following properties:
+
+* Fill in app name, description, icon, and colour.
+* Configure interactive components with the URL ending in `/interactive`
+* Configure slash commands with the URL ending in `/commands`
+* Configure event subscriptions with URL ending in `/events`. Subscribe to bot scope `app_uninstall` and `app_home_opened`.
+* Configure bot user/app home. Set Home Tab to active.
+* Configure permissions:
+  * Add the redirect url to the URL ending in `/auth`.
+  * Add Bot Token Scopes: `commands`, `channels:read`, `chat:write`, `groups:read`, `im:write`, `channels:join`, `chat:write.public`.
 
 ### Configuration
 
@@ -33,7 +48,7 @@ environmental variables in your shell, or put them in a `.env` file in the same 
  * `SLACK_SIGNING_SECRET`: Signing secret to verify that the requests comes from Slack
  * `SLACK_CLIENT_ID`: Client ID for Slack app.
  * `SLACK_CLIENT_SECRET`: Client secret for Slack app.
- * `SLACK_REDIRECT_URI`: Publicly available url where Slack should redirect to after adding app.
+ * `SLACK_REDIRECT_URI`: Publicly available url where Slack should redirect to after adding app (the endpoint ending in `/auth`)
  * `JWT_SECRET`: A random string used to secure JWT tokens used for internal communications.
  * `PORT`: Port for HTTP server to listen on, *only used in standalone mode, not in serverless*.
 

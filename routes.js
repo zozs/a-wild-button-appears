@@ -94,7 +94,7 @@ module.exports = (app, asyncEventHandler) => {
     const { code } = req.query
     try {
       await installCommand(code)
-      res.send('App installed successfully!')
+      res.send('App installed successfully! Visit Slack and check the message you just received from wildbutton.')
     } catch (e) {
       console.debug('Failed to install app, got error:', e)
       res.sendStatus(400)

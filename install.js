@@ -31,6 +31,6 @@ module.exports = async code => {
 
   // tell user how configuration should be done by sending an IM to the installing user.
   await slack.sendImToUser(instance, instance.authedUser.id, {
-    text: "Hi! I'm wildbutton! To configure me, do something."
+    text: "Hi! I'm wildbutton! To configure me, visit my Home tab under Apps in the menu bar."
   })
 }
