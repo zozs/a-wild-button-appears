@@ -47,6 +47,9 @@ module.exports = (app, asyncEventHandler) => {
       if (payload.type === 'block_actions') {
         for (const action of payload.actions) {
           switch (action.action_id) {
+            case 'admin_channel':
+              await settings.setChannel(res, instanceRef, action, asyncEventHandler)
+              break
             case 'admin_timezone':
               await settings.setTimezone(res, instanceRef, action, asyncEventHandler)
               break

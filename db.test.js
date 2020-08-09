@@ -1037,6 +1037,67 @@ describe('database', () => {
     })
   })
 
+  describe('setChannel', () => {
+    beforeEach(async () => {
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      // For each of these tests, initialize the db with some contents.
+      const sharedProperties = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        buttons: [],
+        scheduled: {}
+      }
+
+      await collection.insertMany([{
+        ...sharedProperties,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        channel: null
+      }, {
+        ...sharedProperties,
+        team: {
+          id: 'T2',
+          name: 'Team2'
+        },
+        channel: 'C2'
+      }])
+    })
+
+    test('stores channel when null originally', async () => {
+      await db.setChannel('T1', 'c1')
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T1'
+      })
+
+      expect(instance).toHaveProperty('channel', 'c1')
+    })
+
+    test('stores channel when already set', async () => {
+      await db.setChannel('T2', 'c1')
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T2'
+      })
+
+      expect(instance).toHaveProperty('channel', 'c1')
+    })
+  })
+
   describe('setEndTime', () => {
     beforeEach(async () => {
       const collection = await db._instanceCollection()

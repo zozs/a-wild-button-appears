@@ -356,6 +356,34 @@ module.exports = {
   },
   recentClickTimes () { throw new Error('not implemented') },
 
+  async setChannel (instanceRef, channel) {
+    const collection = await instanceCollection()
+    const result = await collection.updateOne({ 'team.id': instanceRef }, {
+      $set: {
+        channel
+      }
+    })
+
+    if (result.matchedCount !== 1) {
+      console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
+      throw new Error(`Failed to set channel, nothing were matched in query! instanceRef: ${instanceRef}`)
+    }
+  },
+
+  async setEndTime (instanceRef, seconds) {
+    const collection = await instanceCollection()
+    const result = await collection.updateOne({ 'team.id': instanceRef }, {
+      $set: {
+        intervalEnd: seconds
+      }
+    })
+
+    if (result.matchedCount !== 1) {
+      console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
+      throw new Error(`Failed to set end time, nothing were matched in query! instanceRef: ${instanceRef}`)
+    }
+  },
+
   async setStartTime (instanceRef, seconds) {
     const collection = await instanceCollection()
     const result = await collection.updateOne({ 'team.id': instanceRef }, {
@@ -409,20 +437,6 @@ module.exports = {
       return { timestamp, messageId, channel }
     } else {
       return null
-    }
-  },
-
-  async setEndTime (instanceRef, seconds) {
-    const collection = await instanceCollection()
-    const result = await collection.updateOne({ 'team.id': instanceRef }, {
-      $set: {
-        intervalEnd: seconds
-      }
-    })
-
-    if (result.matchedCount !== 1) {
-      console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
-      throw new Error(`Failed to set end time, nothing were matched in query! instanceRef: ${instanceRef}`)
     }
   },
 

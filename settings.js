@@ -19,6 +19,13 @@ function weekdaysToMask (weekdays) {
 }
 
 module.exports = {
+  async setChannel (res, instanceRef, action, asyncEventHandler) {
+    const channel = action.selected_channel
+    await db.setChannel(instanceRef, channel)
+    await reschedule(asyncEventHandler, instanceRef)
+    res.send('')
+  },
+
   async setEndTime (res, instanceRef, action, asyncEventHandler) {
     const seconds = parseInt(action.selected_option.value)
     await db.setEndTime(instanceRef, seconds)

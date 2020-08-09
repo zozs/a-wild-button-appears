@@ -118,6 +118,28 @@ describe('timezone setting', () => {
   })
 })
 
+describe('channel setting', () => {
+  beforeEach(() => {
+    db.setChannel.mockReset()
+  })
+
+  test('can set channel correctly', async () => {
+    const instanceRef = 'T1234'
+    const action = { // the real object has the complete plain text and stuff for the whole view too.
+      type: 'channels_select',
+      action_id: 'admin_channel',
+      selected_channel: 'C1234'
+    }
+    const res = { send: jest.fn() }
+
+    await settings.setChannel(res, instanceRef, action, asyncEventHandler)
+    expect(db.setChannel).toHaveBeenCalledTimes(1)
+    expect(db.setChannel.mock.calls[0][0]).toBe(instanceRef)
+    expect(db.setChannel.mock.calls[0][1]).toBe('C1234')
+    expect(res.send).toHaveBeenCalledAfter(db.setChannel)
+  })
+})
+
 describe('weekday setting', () => {
   beforeEach(() => {
     db.setWeekdays.mockReset()

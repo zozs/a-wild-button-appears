@@ -83,6 +83,7 @@ module.exports = {
       }
     ]
   },
+  setChannel: jest.fn(async (instanceRef, channel) => {}),
   setEndTime: jest.fn(async (instanceRef, timezone) => {}),
   setStartTime: jest.fn(async (instanceRef, timezone) => {}),
   setTimezone: jest.fn(async (instanceRef, timezone) => {}),

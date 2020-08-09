@@ -112,6 +112,7 @@ function renderHome (statsBlocks, isAdmin, initialSettings) {
 
     // Current settings.
     let {
+      channel: initialChannel,
       timezone: initialTimezone,
       intervalStart: initialStart,
       intervalEnd: initialEnd,
@@ -216,6 +217,23 @@ function renderHome (statsBlocks, isAdmin, initialSettings) {
           },
           options: times.map(optionTime),
           ...(initialEnd && { initial_option: optionTime(initialEnd) })
+        }
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: ':hash: Select the channel to post to'
+        },
+        accessory: {
+          type: 'channels_select',
+          action_id: 'admin_channel',
+          placeholder: {
+            type: 'plain_text',
+            text: 'Select a channel',
+            emoji: true
+          },
+          ...(initialChannel && { initial_channel: initialChannel })
         }
       }
     ]
