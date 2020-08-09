@@ -2,6 +2,7 @@ const { getAllTimezones } = require('countries-and-timezones')
 
 const db = require('./db')
 const { publishView } = require('./slack')
+const { statsBlocks } = require('./stats')
 
 function optionTime (seconds) {
   seconds = parseInt(seconds, 10)
@@ -94,18 +95,10 @@ function timeZoneGroups () {
   return groupedZones
 }
 
-function renderHome (isAdmin, initialSettings) {
+function renderHome (statsBlocks, isAdmin, initialSettings) {
   const view = {
     type: 'home',
-    blocks: [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: 'Here you can configure wildbutton. This can only be done by admins.'
-        }
-      }
-    ]
+    blocks: statsBlocks
   }
 
   if (isAdmin) {
@@ -138,6 +131,13 @@ function renderHome (isAdmin, initialSettings) {
         text: {
           type: 'mrkdwn',
           text: '*Wildbutton configuration :female-construction-worker:*'
+        }
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: 'Here you can configure wildbutton. This can only be done by admins.'
         }
       },
       {
@@ -228,14 +228,15 @@ function renderHome (isAdmin, initialSettings) {
 
 module.exports = {
   async publishHome ({ instanceRef, user }) {
-    // Get current settings.
+    // Get current settings and stats.
     const instance = await db.instance(instanceRef)
+    const stats = await statsBlocks(instanceRef)
 
     // Check if user is admin.
     const isAdmin = instance.authedUser.id === user
 
     // The initialSettings object matches the one from the db.
-    const view = renderHome(isAdmin, instance)
+    const view = renderHome(stats, isAdmin, instance)
     await publishView(instance, user, view)
   },
   timeZoneGroups

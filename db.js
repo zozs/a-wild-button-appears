@@ -112,12 +112,55 @@ module.exports = {
       return { clicks: [] }
     }
   },
-  clicksPerUser () {
-    throw new Error('not implemented')
+
+  /**
+   * Returns a list sorted by the number of times a user has won.
+   */
+  async clicksPerUser (instanceRef) {
+    // We now that the database already have clicks in sorted order, so we can just grab the first
+    // click for each button to get the winner.
+    const collection = await instanceCollection()
+    const instance = await collection.findOne({
+      'team.id': instanceRef
+    })
+
+    const winningClicks = instance.buttons
+      .map(e => e.clicks ? e.clicks[0] : undefined)
+      .filter(e => e !== undefined)
+      .map(e => e.user)
+
+    const counter = new Map()
+    for (const u of winningClicks) {
+      counter.set(u, (counter.get(u) || 0) + 1)
+    }
+
+    // Return as sorted list.
+    const sorted = Array.from(counter.entries(), ([user, count]) => ({ user, count }))
+    sorted.sort((a, b) => b.count - a.count)
+    return sorted
   },
-  fastestClickTimes () {
-    throw new Error('not implemented')
+
+  /**
+   * Returns a list sorted by the shortest winning click times (ascending order).
+   */
+  async fastestClickTimes (instanceRef, maxCount) {
+    const collection = await instanceCollection()
+    const instance = await collection.findOne({
+      'team.id': instanceRef
+    })
+
+    const winningClickTimes = instance.buttons
+      .map(e => e.clicks && e.clicks[0] ? [e.uuid, e.clicks[0]] : undefined)
+      .filter(e => e !== undefined)
+      .map(([uuid, { user, timestamp }]) => ({
+        user,
+        time: timestamp - DateTime.fromISO(uuid).toUTC()
+      }))
+
+    winningClickTimes.sort((a, b) => a.time - b.time)
+    return winningClickTimes.slice(0, maxCount)
   },
+
   async installInstance (instance) {
     // create new instance in database, with some sane (?) default values.
     const instanceData = {
@@ -311,21 +354,6 @@ module.exports = {
     throw new Error(`Failed to successfully record click even though ${MAX_RETRIES} tries were done.`)
   },
   recentClickTimes () { throw new Error('not implemented') },
-  slowestClickTimes () { throw new Error('not implemented') },
-
-  async setEndTime (instanceRef, seconds) {
-    const collection = await instanceCollection()
-    const result = await collection.updateOne({ 'team.id': instanceRef }, {
-      $set: {
-        intervalEnd: seconds
-      }
-    })
-
-    if (result.matchedCount !== 1) {
-      console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
-      throw new Error(`Failed to set end time, nothing were matched in query! instanceRef: ${instanceRef}`)
-    }
-  },
 
   async setStartTime (instanceRef, seconds) {
     const collection = await instanceCollection()
@@ -381,6 +409,41 @@ module.exports = {
     } else {
       return null
     }
+  },
+
+  async setEndTime (instanceRef, seconds) {
+    const collection = await instanceCollection()
+    const result = await collection.updateOne({ 'team.id': instanceRef }, {
+      $set: {
+        intervalEnd: seconds
+      }
+    })
+
+    if (result.matchedCount !== 1) {
+      console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
+      throw new Error(`Failed to set end time, nothing were matched in query! instanceRef: ${instanceRef}`)
+    }
+  },
+
+  /**
+   * Returns a list sorted by the slowest winning click times (descending order).
+   */
+  async slowestClickTimes (instanceRef, maxCount) {
+    const collection = await instanceCollection()
+    const instance = await collection.findOne({
+      'team.id': instanceRef
+    })
+
+    const winningClickTimes = instance.buttons
+      .map(e => e.clicks && e.clicks[0] ? [e.uuid, e.clicks[0]] : undefined)
+      .filter(e => e !== undefined)
+      .map(([uuid, { user, timestamp }]) => ({
+        user,
+        time: timestamp - DateTime.fromISO(uuid).toUTC()
+      }))
+
+    winningClickTimes.sort((a, b) => b.time - a.time)
+    return winningClickTimes.slice(0, maxCount)
   },
 
   async storeScheduled (instanceRef, dateTime, messageId) {

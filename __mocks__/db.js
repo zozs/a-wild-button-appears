@@ -24,7 +24,10 @@ module.exports = {
       ]
     }
   }),
-  clicksPerUser () {
+  async clicksPerUser (instanceRef) {
+    if (!instanceRef) {
+      throw new Error('no instanceRef given')
+    }
     return [
       {
         user: 'test1',
@@ -36,7 +39,12 @@ module.exports = {
       }
     ]
   },
-  fastestClickTimes () { return [] },
+  async fastestClickTimes (instanceRef) {
+    if (!instanceRef) {
+      throw new Error('no instanceRef given')
+    }
+    return []
+  },
   installInstance: jest.fn(async (instance) => {}),
   instance: jest.fn(async (instanceRef) => ({
     name: 'test instance',
@@ -85,6 +93,6 @@ module.exports = {
   recordClick: jest.fn(async (instanceRef, uuid, user, time) => {
     return true
   }),
-  recentClickTimes () { return [] },
-  slowestClickTimes () { return [] }
+  async recentClickTimes () { return [] },
+  async slowestClickTimes (instanceRef) { return [] }
 }

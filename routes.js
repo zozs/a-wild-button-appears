@@ -3,7 +3,7 @@ const { click: clickCommand } = require('./click')
 const helpCommand = require('./help')
 const installCommand = require('./install')
 const settings = require('./settings')
-const statsCommand = require('./stats')
+const { statsCommand } = require('./stats')
 const usageCommand = require('./usage')
 
 const { slackVerifyUrlencoded } = require('./slack-request-verifier')
@@ -19,14 +19,14 @@ module.exports = (app, asyncEventHandler) => {
   app.post('/commands', verifyUrlencoded, async (req, res) => {
     // extract slash command text from payload
     const body = req.body
-    // const team = req.slack.team
+    const instanceRef = req.body.team_id
 
     // create the dialog payload - includes the dialog structure, Slack API token,
     // and trigger ID
     console.debug('Got slash command with text:', body.text)
     try {
       if (body.text === 'stats') {
-        await statsCommand(res)
+        await statsCommand(res, instanceRef)
       } else if (body.text === 'help') {
         await helpCommand(res)
       } else {

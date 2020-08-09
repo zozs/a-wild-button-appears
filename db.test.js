@@ -115,6 +115,217 @@ describe('database', () => {
     })
   })
 
+  describe('clicksPerUser', () => {
+    beforeEach(async () => {
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      // For each of these tests, initialize the db with some contents.
+      const instanceCommon = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        channel: 'C1',
+        scheduled: {}
+      }
+
+      const instance1 = {
+        ...instanceCommon,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        buttons: []
+      }
+
+      const instance2 = {
+        ...instanceCommon,
+        team: {
+          id: 'T2',
+          name: 'Team2'
+        },
+        buttons: [
+          {
+            uuid: '2020-03-14T13:37:00.000Z',
+            clicks: [
+              {
+                user: 'U12341234',
+                timestamp: '2020-03-14T13:37:02.000Z'
+              },
+              {
+                user: 'U99991111',
+                timestamp: '2020-03-14T13:37:03.000Z'
+              }
+            ]
+          },
+          {
+            uuid: '2020-03-15T13:37:00.000Z',
+            clicks: [
+              {
+                user: 'U12341234',
+                timestamp: '2020-03-15T13:37:02.000Z'
+              },
+              {
+                user: 'U99991111',
+                timestamp: '2020-03-15T13:37:03.000Z'
+              }
+            ]
+          },
+          {
+            uuid: '2020-03-16T13:37:00.000Z',
+            clicks: [
+              {
+                user: 'U99991111',
+                timestamp: '2020-03-16T13:37:03.000Z'
+              }
+            ]
+          },
+          {
+            uuid: '2020-03-18T13:37:00.000Z'
+          },
+          {
+            uuid: '2020-03-19T13:37:00.000Z',
+            clicks: []
+          }
+        ]
+      }
+
+      await collection.insertMany([instance1, instance2])
+    })
+
+    test('is empty when no clicks have been made', async () => {
+      const clicks = await db.clicksPerUser('T1')
+      expect(clicks).toEqual([])
+    })
+
+    test('is sorted and correct', async () => {
+      const clicks = await db.clicksPerUser('T2')
+      expect(clicks).toEqual([
+        { user: 'U12341234', count: 2 },
+        { user: 'U99991111', count: 1 }
+      ])
+    })
+  })
+
+  describe('fastestClickTimes', () => {
+    beforeEach(async () => {
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      // For each of these tests, initialize the db with some contents.
+      const instanceCommon = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        channel: 'C1',
+        scheduled: {}
+      }
+
+      const instance1 = {
+        ...instanceCommon,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        buttons: []
+      }
+
+      const instance2 = {
+        ...instanceCommon,
+        team: {
+          id: 'T2',
+          name: 'Team2'
+        },
+        buttons: [
+          {
+            uuid: '2020-03-14T13:37:00.000Z',
+            clicks: [
+              {
+                user: 'U12341234',
+                timestamp: DateTime.fromISO('2020-03-14T13:37:02.000Z').toUTC().toBSON()
+              },
+              {
+                user: 'U99991111',
+                timestamp: DateTime.fromISO('2020-03-14T13:37:03.000Z').toUTC().toBSON()
+              }
+            ]
+          },
+          {
+            uuid: '2020-03-15T13:37:00.000Z',
+            clicks: [
+              {
+                user: 'U12341234',
+                timestamp: DateTime.fromISO('2020-03-15T13:37:01.000Z').toUTC().toBSON()
+              },
+              {
+                user: 'U99991111',
+                timestamp: DateTime.fromISO('2020-03-15T13:37:03.000Z').toUTC().toBSON()
+              }
+            ]
+          },
+          {
+            uuid: '2020-03-16T13:37:00.000Z',
+            clicks: [
+              {
+                user: 'U99991111',
+                timestamp: DateTime.fromISO('2020-03-16T13:37:04.000Z').toUTC().toBSON()
+              }
+            ]
+          },
+          {
+            uuid: '2020-03-18T13:37:00.000Z'
+          },
+          {
+            uuid: '2020-03-19T13:37:00.000Z',
+            clicks: []
+          }
+        ]
+      }
+
+      await collection.insertMany([instance1, instance2])
+    })
+
+    test('is empty when no clicks have been made', async () => {
+      const clicks = await db.fastestClickTimes('T1', 10)
+      expect(clicks).toEqual([])
+    })
+
+    test('is sorted and correct', async () => {
+      const clicks = await db.fastestClickTimes('T2', 10)
+      expect(clicks).toEqual([
+        { user: 'U12341234', time: 1000 },
+        { user: 'U12341234', time: 2000 },
+        { user: 'U99991111', time: 4000 }
+      ])
+    })
+
+    test('limits entries correctly', async () => {
+      const clicks = await db.fastestClickTimes('T2', 1)
+      expect(clicks).toHaveLength(1)
+      expect(clicks).toEqual([
+        { user: 'U12341234', time: 1000 }
+      ])
+    })
+  })
+
   describe('installInstance', () => {
     test('creates a new object in database', async () => {
       const testInstance = new Instance()
@@ -1067,6 +1278,116 @@ describe('database', () => {
       const scheduled = await db.scheduled('T2')
       expect(scheduled).toHaveProperty('timestamp', DateTime.fromISO('2020-04-12T13:22:00.000Z').toUTC().toBSON())
       expect(scheduled).toHaveProperty('messageId', 'before')
+    })
+  })
+
+  describe('slowestClickTimes', () => {
+    beforeEach(async () => {
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      // For each of these tests, initialize the db with some contents.
+      const instanceCommon = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        channel: 'C1',
+        scheduled: {}
+      }
+
+      const instance1 = {
+        ...instanceCommon,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        buttons: []
+      }
+
+      const instance2 = {
+        ...instanceCommon,
+        team: {
+          id: 'T2',
+          name: 'Team2'
+        },
+        buttons: [
+          {
+            uuid: '2020-03-14T13:37:00.000Z',
+            clicks: [
+              {
+                user: 'U12341234',
+                timestamp: DateTime.fromISO('2020-03-14T13:37:02.000Z').toUTC().toBSON()
+              },
+              {
+                user: 'U99991111',
+                timestamp: DateTime.fromISO('2020-03-14T13:37:03.000Z').toUTC().toBSON()
+              }
+            ]
+          },
+          {
+            uuid: '2020-03-15T13:37:00.000Z',
+            clicks: [
+              {
+                user: 'U12341234',
+                timestamp: DateTime.fromISO('2020-03-15T13:37:01.000Z').toUTC().toBSON()
+              },
+              {
+                user: 'U99991111',
+                timestamp: DateTime.fromISO('2020-03-15T13:37:03.000Z').toUTC().toBSON()
+              }
+            ]
+          },
+          {
+            uuid: '2020-03-16T13:37:00.000Z',
+            clicks: [
+              {
+                user: 'U99991111',
+                timestamp: DateTime.fromISO('2020-03-16T13:37:04.000Z').toUTC().toBSON()
+              }
+            ]
+          },
+          {
+            uuid: '2020-03-18T13:37:00.000Z'
+          },
+          {
+            uuid: '2020-03-19T13:37:00.000Z',
+            clicks: []
+          }
+        ]
+      }
+
+      await collection.insertMany([instance1, instance2])
+    })
+
+    test('is empty when no clicks have been made', async () => {
+      const clicks = await db.slowestClickTimes('T1', 10)
+      expect(clicks).toEqual([])
+    })
+
+    test('is sorted and correct', async () => {
+      const clicks = await db.slowestClickTimes('T2', 10)
+      expect(clicks).toEqual([
+        { user: 'U99991111', time: 4000 },
+        { user: 'U12341234', time: 2000 },
+        { user: 'U12341234', time: 1000 }
+      ])
+    })
+
+    test('limits entries correctly', async () => {
+      const clicks = await db.slowestClickTimes('T2', 1)
+      expect(clicks).toHaveLength(1)
+      expect(clicks).toEqual([
+        { user: 'U99991111', time: 4000 }
+      ])
     })
   })
 
