@@ -1,0 +1,63 @@
+service: wildbutton
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: eu-central-1
+  stage: ${opt:stage, 'dev'}
+  memorySize: 512
+  timeout: 10
+  iamRoleStatements:
+  - Effect: Allow
+    Action:
+    - lambda:InvokeFunction
+    Resource:
+    - arn:aws:lambda:${self:provider.region}:*:*
+
+custom:
+  serverless-offline:
+    host: 0.0.0.0
+    httpPort: 9850
+
+package:
+  exclude:
+    - node_modules/.cache/**
+    - misc/**
+
+functions:
+  wildbutton:
+    handler: handler-serverless.handler
+    events:
+    - http:
+        path: /
+        method: get
+    - http:
+        path: /auth
+        method: get
+    - http:
+        path: /commands
+        method: post
+    - http:
+        path: /events
+        method: post
+    - http:
+        path: /install
+        method: get
+    - http:
+        path: /interactive
+        method: post
+    environment:
+      ASYNC_HANDLER_LAMBDA: ${self:service}-${self:provider.stage}-wildbutton-asyncevent
+  wildbutton-hourlycheck:
+    handler: handler-serverless.hourly
+    events:
+    - schedule:
+        rate: rate(10 minutes)
+        enabled: true
+  wildbutton-asyncevent:
+    handler: handler-serverless.asyncEvent
+
+
+plugins:
+  - serverless-offline
+  - serverless-dotenv-plugin

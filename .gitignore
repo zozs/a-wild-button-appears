@@ -1,3 +1,6 @@
 node_modules/
-.env
+/.env.*
 wildstats.json
+/wildbutton-firebase*json
+/coverage/
+/.serverless/

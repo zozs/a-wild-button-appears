@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  wildbutton:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev-sls
+    volumes:
+      - ./:/home/node/app
+    ports:
+      - 9850:9850
+    environment:
+      PORT: 9850
+      MONGO_DATABASE_NAME: wildbuttondev
+      MONGO_URL: mongodb://root:devpass@mongo:27017/
+    env_file:
+      - .env
+
+  mongo:
+    image: mongo:4
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: devpass
+    ports:
+      - 27017:27017

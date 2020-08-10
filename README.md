@@ -20,35 +20,22 @@ Install the bot, and then proceed by waiting for a wild BUTTON to appear.
 
 ### Installation
 
-First grab the source code.
+#### Install with my deployed instance
 
-```
-$ git clone https://github.com/zozs/a-wild-button-appears.git
-$ npm install
-```
+Coming soon :)
 
-Then add an app to your Slack workspace. Configure it as follows:
+#### Deploy own instance
 
-#### Interactive components
+Configure new Slack app with following properties:
 
-Add the URL to the server the app is running on, followed by `/interactive`, e.g. `https://example.com/interactive`
-
-#### Slash commands
-
-Add the command `/wildbutton`, with the request url similar to: `https://example.com/commands`
-
-#### Permissions
-
-Add the following scopes:
-
-- `commands`
-- `chat:write:bot`
-- `users:read`
-
-#### Install the app
-
-The install the app, and go to Permissions and note down the generated token. Also look
-up the Verification token.
+* Fill in app name, description, icon, and colour.
+* Configure interactive components with the URL ending in `/interactive`
+* Configure slash commands with the URL ending in `/commands`
+* Configure event subscriptions with URL ending in `/events`. Subscribe to bot scope `app_uninstall` and `app_home_opened`.
+* Configure bot user/app home. Set Home Tab to active.
+* Configure permissions:
+  * Add the redirect url to the URL ending in `/auth`.
+  * Add Bot Token Scopes: `commands`, `channels:read`, `chat:write`, `groups:read`, `im:write`, `channels:join`, `chat:write.public`.
 
 ### Configuration
 
@@ -56,23 +43,33 @@ A wild BUTTON appears needs some environmental variables configured. You can eit
 environmental variables in your shell, or put them in a `.env` file in the same folder as
 `wildbutton.js`.
 
- * `ALLOW_MANUAL_ANNOUNCE`: Set to `yes` to allow manual announcement of button (good for testing)
- * `SLACK_ACCESS_TOKEN`: The app token
+ * `MONGO_URL`: A connection string to connect to MongoDB. Example: `mongodb+srv://user:pass@some-atlas-example.mongodb.net/test?retryWrites=true&w=majority`
+ * `MONGO_DATABASE_NAME`: Name of database in Mongo to store the instance data.
  * `SLACK_SIGNING_SECRET`: Signing secret to verify that the requests comes from Slack
- * `PORT`: Port for HTTP server to listen on
- * `ANNOUNCE_CHANNEL`: Channel ID (e.g. C12345678) in which to post the button.
- * `DATA`: path to json-file where statistics are stored.
+ * `SLACK_CLIENT_ID`: Client ID for Slack app.
+ * `SLACK_CLIENT_SECRET`: Client secret for Slack app.
+ * `SLACK_REDIRECT_URI`: Publicly available url where Slack should redirect to after adding app (the endpoint ending in `/auth`)
+ * `JWT_SECRET`: A random string used to secure JWT tokens used for internal communications.
+ * `PORT`: Port for HTTP server to listen on, *only used in standalone mode, not in serverless*.
 
 ### Running
 
-Just launch the `wildbutton.js` file with Node.
+#### Standalone mode
+
+Launch the `handler-standalone.js` file with Node.
+
+#### Serverless
+
+To deploy a staging environment, use e.g. `sls deploy --stage=dev --env=staging` which will load settings from `.env.staging`.
+
+For production, use something like `sls deploy --stage=production --env=production`.
 
 ## License
 
 A wild BUTTON appears is licensed under the ISC license, see the `LICENSE` file, or the text below:
 
 ```
-Copyright (c) 2018, 2019, Linus Karlsson
+Copyright (c) 2018, 2019, 2020, Linus Karlsson
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above

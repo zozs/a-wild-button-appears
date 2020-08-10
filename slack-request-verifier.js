@@ -1,7 +1,7 @@
-const crypto = require('crypto')
 const express = require('express')
+const { verifyRequestSignature } = require('@slack/events-api')
 
-function slackVerifyBuf (signingSecret) {
+function slackVerifySignedData () {
   return (req, res, buf, encoding) => {
     const body = buf.toString(encoding || 'utf8')
     const requestSignature = req.get('X-Slack-Signature')
@@ -12,28 +12,15 @@ function slackVerifyBuf (signingSecret) {
       throw new Error('Request is missing Slack signature and/or timestamp header.')
     }
 
-    const fiveMinutesAgo = Math.floor(Date.now() / 1000) - (60 * 5)
-    if (requestTimestamp < fiveMinutesAgo) {
-      console.error('Request is older than 5 minutes.')
-      throw new Error('Slack request signing verification failed')
-    }
-
-    const hmac = crypto.createHmac('sha256', signingSecret)
-    const [version, hash] = requestSignature.split('=')
-    hmac.update(`${version}:${requestTimestamp}:${body}`)
-
-    if (hash !== hmac.digest('hex')) {
-      console.error('Invalid signature on request!')
-      throw new Error('Slack request signing verification failed')
+    const signingSecret = process.env.SLACK_SIGNING_SECRET
+    if (!verifyRequestSignature({ body, signingSecret, requestSignature, requestTimestamp })) {
+      console.error('Verification of slack request signature failed for unknown reason.')
+      throw new Error('Verification of Slack request signature failed for unknown reason.')
     }
   }
 }
 
 module.exports = {
-  slackVerifyJson (signingSecret, opts) {
-    return express.json({ ...opts, verify: slackVerifyBuf(signingSecret) })
-  },
-  slackVerifyUrlencoded (signingSecret, opts) {
-    return express.urlencoded({ ...opts, verify: slackVerifyBuf(signingSecret) })
-  }
+  slackVerifyJson: (opts) => express.json({ ...opts, limit: '3mb', verify: slackVerifySignedData() }),
+  slackVerifyUrlencoded: (opts) => express.urlencoded({ ...opts, limit: '3mb', verify: slackVerifySignedData() })
 }

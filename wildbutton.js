@@ -1,6 +1,6 @@
 require('dotenv').config()
 const express = require('express')
-const mountAnnounces = require('./announces')
+const mountEvents = require('./events')
 const mountRoutes = require('./routes')
 
 const app = express()
@@ -8,15 +8,24 @@ const app = express()
 /*
  * Environmental variables required:
  *
- * ALLOW_MANUAL_ANNOUNCE: Set to 'yes' to allow manual announcement of button.
- * SLACK_ACCESS_TOKEN: The app token
  * SLACK_SIGNING_SECRET: The secret used to verify that requests come from Slack
+ * SLACK_CLIENT_ID: The public client id of the app.
+ * SLACK_CLIENT_SECRET: The private client secret of the app.
+ * SLACK_REDIRECT_URI: URI used when returning from Oauth flow. Public URL of app.
  * PORT: Port for HTTP server to listen on
- * ANNOUNCE_CHANNEL: Channel ID (e.g. C12345678) in which to post the button.
- * DATA: path to json-file where statistics are stored.
+ * MONGO_URL: Mongo connection string.
+ * MONGO_DATABASE_NAME: Database name for mongo.
+ *
+ * Environmental variables that may be required depending on deployment:
+ *
+ * JWT_SECRET: For AWS lambda deployments to secure asynchronous lambda invocations.
+ *             Should be a random string
+ * ASYNC_HANDLER_LAMBDA: Function name of lambda for e.g., click registration. Should be
+ *                       filled in automatically by serverless.yml
  */
 
-mountRoutes(app)
-mountAnnounces()
-
-app.listen(process.env.PORT, () => console.log('A wild BUTTON appeared listening on port', process.env.PORT))
+module.exports = (asyncEventHandler) => {
+  mountEvents(app, asyncEventHandler)
+  mountRoutes(app, asyncEventHandler)
+  return app
+}
