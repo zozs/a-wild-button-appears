@@ -2,9 +2,9 @@ name: Vulnerability scan
 
 on:
   push:
-    branches: [ serverless ]
+    branches: [ master ]
   pull_request:
-    branches: [ serverless ]
+    branches: [ master ]
 
 jobs:
   vulnerabilities-scan:
