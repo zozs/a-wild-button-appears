@@ -97,7 +97,7 @@ async function migrate (data, team) {
   if (result.value !== null) {
     console.debug(`Successfully wrote ${team} version ${result.value.buttonsVersion}`)
   } else {
-    console.error(`Failed to write to mongo database!`)
+    console.error('Failed to write to mongo database!')
   }
 }
 
@@ -117,7 +117,7 @@ async function parseJson (data) {
     }
     button.clicks.push({
       user: obj.user,
-      timestamp: DateTime.fromISO(obj.clickTime).toUTC(),
+      timestamp: DateTime.fromISO(obj.clickTime).toUTC()
     })
 
     // Then add the runner ups, if they exist.
@@ -131,7 +131,7 @@ async function parseJson (data) {
     }
 
     // Sort by click time and remove duplicates and stuff.
-    // To this by sorting by click time, and filter out  
+    // To this by sorting by click time, and filter out
     // duplicate clicks by the same user.
     button.clicks.sort((a, b) => a.timestamp.valueOf() - b.timestamp.valueOf())
 
