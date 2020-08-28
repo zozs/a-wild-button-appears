@@ -31,8 +31,8 @@ afterAll(async () => {
 // silence console.debug
 console.debug = jest.fn()
 
-const db = require('./db')
-const { Instance } = require('./__mocks__/instance')
+const db = require('../db')
+const { Instance } = require('../__mocks__/instance')
 
 describe('database', () => {
   beforeEach(async () => {

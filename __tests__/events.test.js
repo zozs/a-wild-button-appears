@@ -3,12 +3,12 @@
 const crypto = require('crypto')
 const request = require('supertest')
 
-jest.mock('./home')
-jest.mock('./routes')
+jest.mock('../home')
+jest.mock('../routes')
 
-const { asyncEventRouter } = require('./async-routes')
-const { publishHome } = require('./home')
-const wildbuttonApp = require('./wildbutton')
+const { asyncEventRouter } = require('../async-routes')
+const { publishHome } = require('../home')
+const wildbuttonApp = require('../wildbutton')
 
 let app
 
