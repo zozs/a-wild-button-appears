@@ -1,8 +1,8 @@
 /* global beforeEach, jest, describe, expect, test */
 
-const slack = require('./slack')
+const slack = require('../slack')
 
-const { Instance } = require('./__mocks__/instance')
+const { Instance } = require('../__mocks__/instance')
 
 const { DateTime } = require('luxon')
 const { WebClient, mockDeleteScheduledMessage, mockJoin, mockOpen, mockPostMessage, mockPublish, mockScheduleMessage } = require('@slack/web-api')

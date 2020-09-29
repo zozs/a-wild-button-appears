@@ -2,14 +2,14 @@
 
 // mock most things since we don't want the top-level statements to do anything.
 jest.mock('node-schedule')
-jest.mock('./announces')
-jest.mock('./click')
-jest.mock('./db')
-jest.mock('./slack')
-jest.mock('./wildbutton')
+jest.mock('../announces')
+jest.mock('../click')
+jest.mock('../db')
+jest.mock('../slack')
+jest.mock('../wildbutton')
 
 // global mocks to handle top-level statement execution.
-const wildbuttonApp = require('./wildbutton')
+const wildbuttonApp = require('../wildbutton')
 let clickRecorderHandler
 wildbuttonApp.mockImplementation((handler) => {
   // will store a refrence to the handler without exporting it.
@@ -19,10 +19,10 @@ wildbuttonApp.mockImplementation((handler) => {
   }
 })
 
-const { clickRecorder } = require('./click')
-const { click } = jest.requireActual('./click')
+const { clickRecorder } = require('../click')
+const { click } = jest.requireActual('../click')
 
-require('./handler-standalone')
+require('../handler-standalone')
 
 describe('handler-standalone', () => {
   describe('clickRecorderHandler', () => {

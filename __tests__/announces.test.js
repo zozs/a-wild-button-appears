@@ -1,17 +1,17 @@
 /* global jest, beforeEach, describe, expect, test */
 
-const { hourlyCheck, nextAnnounce, reschedule } = require('./announces')
+const { hourlyCheck, nextAnnounce, reschedule } = require('../announces')
 const { DateTime } = require('luxon')
 
-const button = require('./button')
-const db = require('./db')
-const slack = require('./slack')
+const button = require('../button')
+const db = require('../db')
+const slack = require('../slack')
 
-const { Instance } = require('./__mocks__/instance')
+const { Instance } = require('../__mocks__/instance')
 
-jest.mock('./button')
-jest.mock('./db')
-jest.mock('./slack')
+jest.mock('../button')
+jest.mock('../db')
+jest.mock('../slack')
 
 expect.extend({
   toBeWithinRange (received, floor, ceiling) {

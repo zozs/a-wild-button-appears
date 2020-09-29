@@ -1,10 +1,10 @@
 /* global describe, expect, jest, test */
 
-const { publishHome, timeZoneGroups } = require('./home')
-const { publishView } = require('./slack')
+const { publishHome, timeZoneGroups } = require('../home')
+const { publishView } = require('../slack')
 
-jest.mock('./db')
-jest.mock('./slack')
+jest.mock('../db')
+jest.mock('../slack')
 
 describe('home view', () => {
   test('calls publishView with correct instance and user', async () => {

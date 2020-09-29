@@ -1,14 +1,14 @@
 /* global beforeEach, describe, expect, jest, test */
 
-const { click, clickRecorder } = require('./click')
+const { click, clickRecorder } = require('../click')
 
-const db = require('./db')
-const slack = require('./slack')
+const db = require('../db')
+const slack = require('../slack')
 
 const { DateTime } = require('luxon')
 
-jest.mock('./db')
-jest.mock('./slack')
+jest.mock('../db')
+jest.mock('../slack')
 
 const clickMockResponseUrl = 'https://hooks.slack.com/actions/AABA1ABCD/a/b'
 const clickMockUuid = '2020-02-01T15:30:20.686Z'

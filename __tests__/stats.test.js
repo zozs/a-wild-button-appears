@@ -1,8 +1,8 @@
 /* global describe, expect, jest, test */
 
-const { statsBlocks, statsCommand } = require('./stats')
+const { statsBlocks, statsCommand } = require('../stats')
 
-jest.mock('./db')
+jest.mock('../db')
 
 // silence console.debug
 console.debug = jest.fn()

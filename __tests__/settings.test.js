@@ -1,11 +1,11 @@
 /* global beforeEach, jest, describe, expect, test */
 
-const settings = require('./settings')
+const settings = require('../settings')
 
-const db = require('./db')
+const db = require('../db')
 
-jest.mock('./announces')
-jest.mock('./db')
+jest.mock('../announces')
+jest.mock('../db')
 
 const asyncEventHandler = jest.fn(async () => {})
 

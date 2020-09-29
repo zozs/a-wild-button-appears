@@ -3,17 +3,17 @@
 const request = require('supertest')
 const { verifyRequestSignature } = require('@slack/events-api')
 
-const { click: clickCommand } = require('./click')
-const wildbuttonApp = require('./wildbutton')
-const install = require('./install')
+const { click: clickCommand } = require('../click')
+const wildbuttonApp = require('../wildbutton')
+const install = require('../install')
 
 // silence console.debug
 console.debug = jest.fn()
 
-jest.mock('./click')
-jest.mock('./db')
-jest.mock('./events')
-jest.mock('./install')
+jest.mock('../click')
+jest.mock('../db')
+jest.mock('../events')
+jest.mock('../install')
 jest.mock('@slack/events-api')
 
 const app = wildbuttonApp(null)

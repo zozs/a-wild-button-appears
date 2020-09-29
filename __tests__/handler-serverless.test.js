@@ -3,16 +3,16 @@
 // mock most things since we don't want the top-level statements to do anything.
 jest.mock('aws-sdk')
 jest.mock('serverless-http')
-jest.mock('./announces')
-jest.mock('./click')
-jest.mock('./db')
-jest.mock('./slack')
-jest.mock('./wildbutton')
+jest.mock('../announces')
+jest.mock('../click')
+jest.mock('../db')
+jest.mock('../slack')
+jest.mock('../wildbutton')
 
 const AWS = require('aws-sdk')
 
 // global mocks to handle top-level statement execution.
-const wildbuttonApp = require('./wildbutton')
+const wildbuttonApp = require('../wildbutton')
 let clickRecorderHandler
 wildbuttonApp.mockImplementation((handler) => {
   // will store a refrence to the handler without exporting it.
@@ -24,9 +24,9 @@ AWS.Lambda.mockImplementation(() => ({
   invoke: lambdaInvokeMock
 }))
 
-const { click } = jest.requireActual('./click')
+const { click } = jest.requireActual('../click')
 
-require('./handler-serverless')
+require('../handler-serverless')
 
 beforeAll(async () => {
   Object.assign(process.env, {

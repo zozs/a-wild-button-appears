@@ -1,15 +1,15 @@
 /* global beforeEach, jest, describe, expect, test */
 
-const install = require('./install')
+const install = require('../install')
 
-const db = require('./db')
-const slack = require('./slack')
+const db = require('../db')
+const slack = require('../slack')
 const { WebClient, mockAccess } = require('@slack/web-api')
-const { Instance } = require('./__mocks__/instance')
+const { Instance } = require('../__mocks__/instance')
 
-jest.mock('./db')
+jest.mock('../db')
 jest.mock('@slack/web-api')
-jest.mock('./slack')
+jest.mock('../slack')
 
 beforeEach(() => {
   // Clear all instances and calls to constructor and all methods

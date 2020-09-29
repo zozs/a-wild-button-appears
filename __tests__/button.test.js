@@ -2,7 +2,7 @@
 
 const { DateTime } = require('luxon')
 
-const button = require('./button')
+const button = require('../button')
 
 describe('button to', () => {
   test('have a uuid matching the timestamp', () => {
