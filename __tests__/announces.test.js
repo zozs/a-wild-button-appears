@@ -13,6 +13,9 @@ jest.mock('../button')
 jest.mock('../db')
 jest.mock('../slack')
 
+// silence console.error
+console.error = jest.fn()
+
 expect.extend({
   toBeWithinRange (received, floor, ceiling) {
     const pass = received >= floor && received <= ceiling
@@ -62,6 +65,14 @@ describe('own defined range expect extension works when', () => {
 })
 
 describe('hourly check', () => {
+  beforeEach(() => {
+    // Clear all instances and calls to constructor and all methods
+    slack.scheduleMessage.mockClear()
+    button.mockClear()
+    db.instancesWithNoScheduledAnnounces.mockClear()
+    db.storeScheduled.mockClear()
+  })
+
   test('causes message to be scheduled for non-scheduled instances', async () => {
     slack.scheduleMessage.mockImplementation(async () => ({
       scheduled_message_id: 'Q1298393284',
@@ -86,6 +97,71 @@ describe('hourly check', () => {
     expect(db.storeScheduled.mock.calls[0][1]).toBeDefined()
     expect(db.storeScheduled.mock.calls[0][2]).toBe('Q1298393284')
     expect(db.storeScheduled.mock.calls[0][3]).toBe(testInstance.channel)
+  })
+
+  test('continues with other instances even if one scheduling fails', async () => {
+    db.instancesWithNoScheduledAnnounces.mockImplementationOnce(
+      async () => [
+        {
+          // id: 0,
+          name: 'test instance',
+          accessToken: 'xoxp-1234',
+          team: {
+            id: 'T00000000',
+            name: 'testteam'
+          },
+          channel: 'C00000000',
+          manualAnnounce: false,
+          weekdays: 0b1111100, // monday - friday
+          intervalStart: 32400, // 09:00
+          intervalEnd: 57600, // 16:00
+          timezone: 'Europe/Copenhagen'
+        },
+        {
+          // id: 1,
+          name: 'test instance 2',
+          accessToken: 'xoxp-1235',
+          team: {
+            id: 'T00000001',
+            name: 'testteam2'
+          },
+          channel: 'C00000001',
+          manualAnnounce: false,
+          weekdays: 0b1111100, // monday - friday
+          intervalStart: 32400, // 09:00
+          intervalEnd: 57600, // 16:00
+          timezone: 'Europe/Copenhagen'
+        }
+      ])
+
+    slack.scheduleMessage.mockImplementationOnce(async () => { throw new Error('something bad') })
+    slack.scheduleMessage.mockImplementationOnce(async () => ({
+      scheduled_message_id: 'Q1298393285',
+      post_at: '1562180400',
+      channel: 'C00000001'
+    }))
+
+    button.mockImplementation(() => ({
+      text: 'test'
+    }))
+
+    await hourlyCheck()
+
+    expect(slack.scheduleMessage.mock.calls.length).toBe(2)
+    expect(slack.scheduleMessage.mock.calls[0][0]).toHaveProperty('channel', testInstance.channel)
+    expect(slack.scheduleMessage.mock.calls[0][1]).toHaveProperty('isLuxonDateTime', true)
+    expect(slack.scheduleMessage.mock.calls[0][2]).toHaveProperty('text', 'test')
+    expect(slack.scheduleMessage.mock.calls[1][0]).toHaveProperty('channel', 'C00000001')
+    expect(slack.scheduleMessage.mock.calls[1][1]).toHaveProperty('isLuxonDateTime', true)
+    expect(slack.scheduleMessage.mock.calls[1][2]).toHaveProperty('text', 'test')
+
+    expect(button).toHaveBeenCalledTimes(2)
+
+    expect(db.storeScheduled.mock.calls.length).toBe(1) // only succeeds second time, so only one call.
+    expect(db.storeScheduled.mock.calls[0][0]).toBe('T00000001')
+    expect(db.storeScheduled.mock.calls[0][1]).toBeDefined()
+    expect(db.storeScheduled.mock.calls[0][2]).toBe('Q1298393285')
+    expect(db.storeScheduled.mock.calls[0][3]).toBe('C00000001')
   })
 })
 

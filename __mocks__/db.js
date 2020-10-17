@@ -64,7 +64,7 @@ module.exports = {
       name: 'yoyo'
     }
   })),
-  async instancesWithNoScheduledAnnounces () {
+  instancesWithNoScheduledAnnounces: jest.fn(async () => {
     return [
       {
         // id: 0,
@@ -82,7 +82,7 @@ module.exports = {
         timezone: 'Europe/Copenhagen'
       }
     ]
-  },
+  }),
   setChannel: jest.fn(async (instanceRef, channel) => {}),
   setEndTime: jest.fn(async (instanceRef, timezone) => {}),
   setStartTime: jest.fn(async (instanceRef, timezone) => {}),
