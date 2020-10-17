@@ -23,10 +23,13 @@ package:
   exclude:
     - node_modules/.cache/**
     - misc/**
+    - __tests__/**
+    - __mocks__/**
+    - coverage/**
 
 functions:
   wildbutton:
-    handler: handler-serverless.handler
+    handler: handler-serverless.combinedHandler
     events:
     - http:
         path: /
@@ -46,17 +49,11 @@ functions:
     - http:
         path: /interactive
         method: post
-    environment:
-      ASYNC_HANDLER_LAMBDA: ${self:service}-${self:provider.stage}-wildbutton-asyncevent
-  wildbutton-hourlycheck:
-    handler: handler-serverless.hourly
-    events:
     - schedule:
         rate: rate(10 minutes)
         enabled: true
-  wildbutton-asyncevent:
-    handler: handler-serverless.asyncEvent
-
+    environment:
+      ASYNC_HANDLER_LAMBDA: ${self:service}-${self:provider.stage}-wildbutton
 
 plugins:
   - serverless-offline

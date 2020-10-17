@@ -8,6 +8,24 @@ const { hourlyCheck } = require('./announces')
 const { asyncEventRouter } = require('./async-routes')
 const wildbuttonApp = require('./wildbutton')
 
+module.exports.combinedHandler = async (event, context) => {
+  // By checking for various stuff in event, we can determine what type of request this is.
+  // In this way, we can rely on a single lambda function, instead of three different.
+  console.debug('EVENT: \n' + JSON.stringify(event, null, 2))
+  console.debug('CONTEXT: \n' + JSON.stringify(context, null, 2))
+
+  if (event['detail-type'] === 'Scheduled Event') {
+    // this in an hourly check.
+    return module.exports.hourly(event, context)
+  } else if (event.token) {
+    // this is an async event.
+    return module.exports.asyncEvent(event, context)
+  } else {
+    // this is a regular request to the api.
+    return module.exports.handler(event, context)
+  }
+}
+
 module.exports.handler = serverless(wildbuttonApp(asyncHandler))
 
 module.exports.hourly = async (event, context) => {

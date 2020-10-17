@@ -13,12 +13,15 @@ async function hourlyCheck () {
     // Schedule a new button for this instance.
     // TODO: ugly since we assume that instanceRef is instance.team.id here.
     const instanceRef = instance.team.id
+    try {
+      const now = DateTime.local()
+      const timestamp = await nextAnnounce(instance, now)
 
-    const now = DateTime.local()
-    const timestamp = await nextAnnounce(instance, now)
-
-    const { scheduled_message_id: messageId, channel } = await slack.scheduleMessage(instance, timestamp, button(timestamp))
-    await db.storeScheduled(instanceRef, timestamp, messageId, channel)
+      const { scheduled_message_id: messageId, channel } = await slack.scheduleMessage(instance, timestamp, button(timestamp))
+      await db.storeScheduled(instanceRef, timestamp, messageId, channel)
+    } catch (e) {
+      console.error(`Failed to hourly check-schedule button for instance ${instanceRef}, got error: ${e} in JSON: ${JSON.stringify(e)}`)
+    }
   }
 }
 
