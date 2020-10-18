@@ -1,5 +1,7 @@
 const AWS = require('aws-sdk')
 const jwt = require('jsonwebtoken')
+const { CaptureConsole } = require('@sentry/integrations')
+const Sentry = require('@sentry/serverless')
 const serverless = require('serverless-http')
 
 const { promisify } = require('util')
@@ -8,7 +10,22 @@ const { hourlyCheck } = require('./announces')
 const { asyncEventRouter } = require('./async-routes')
 const wildbuttonApp = require('./wildbutton')
 
-module.exports.combinedHandler = async (event, context) => {
+// If sentry is configured, wrap all handlers in it, otherwise don't.
+let sentryWrapper = f => f
+if (process.env.SENTRY_DSN) {
+  Sentry.AWSLambda.init({
+    dsn: process.env.SENTRY_DSN,
+    tracesSampleRate: 1.0,
+    integrations: [
+      new CaptureConsole(
+        { levels: ['log', 'info', 'warn', 'error', 'assert'] }
+      )
+    ]
+  })
+  sentryWrapper = Sentry.AWSLambda.wrapHandler
+}
+
+module.exports.combinedHandler = sentryWrapper(async (event, context) => {
   // By checking for various stuff in event, we can determine what type of request this is.
   // In this way, we can rely on a single lambda function, instead of three different.
   console.debug('EVENT: \n' + JSON.stringify(event, null, 2))
@@ -24,7 +41,7 @@ module.exports.combinedHandler = async (event, context) => {
     // this is a regular request to the api.
     return module.exports.handler(event, context)
   }
-}
+})
 
 module.exports.handler = serverless(wildbuttonApp(asyncHandler))
 
