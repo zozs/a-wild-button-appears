@@ -51,6 +51,7 @@ environmental variables in your shell, or put them in a `.env` file in the same 
  * `SLACK_REDIRECT_URI`: Publicly available url where Slack should redirect to after adding app (the endpoint ending in `/auth`)
  * `JWT_SECRET`: A random string used to secure JWT tokens used for internal communications.
  * `PORT`: Port for HTTP server to listen on, *only used in standalone mode, not in serverless*.
+ * `SENTRY_DSN`: Optional DSN if you want to submit errors to Sentry. Truly optional, if not set, log only to stderr/stdout. Only works in serverless mode.
 
 ### Running
 
