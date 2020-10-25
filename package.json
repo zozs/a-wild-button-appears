@@ -38,7 +38,7 @@
     "url": "git+https://github.com/zozs/a-wild-button-appears.git"
   },
   "author": "Linus Karlsson <wildbutton@linuskarlsson.se>",
-  "license": "ISC",
+  "license": "AGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/zozs/a-wild-button-appears/issues"
   },
