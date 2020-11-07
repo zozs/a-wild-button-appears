@@ -67,7 +67,7 @@ For production, use something like `sls deploy --stage=production --env=producti
 
 ## License
 
-A wild BUTTON appears is licensed under GNU AGPL v3 or later, see the `LICENSE` file, or the text below:
+A wild BUTTON appears is licensed under GNU AGPL v3 or later, see the `LICENSE` file for the full license.
 
 ```
 a-wild-button-appears - a slack bot for posting random buttons
