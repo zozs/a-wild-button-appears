@@ -22,7 +22,9 @@ Install the bot, and then proceed by waiting for a wild BUTTON to appear.
 
 #### Install with my deployed instance
 
-Coming soon :)
+<a href="https://slack.com/oauth/v2/authorize?client_id=398308658001.1314237615088&scope=commands,channels:read,chat:write,groups:read,im:write,channels:join,chat:write.public&user_scope="><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
+
+After installation, you will receive a message by DM in your Slack client. You can then go to the Home tab of wildbutton, where you can configure settings. You need to at least select the proper channel to post buttons to :slightly_smiling_face:
 
 #### Deploy own instance
 
