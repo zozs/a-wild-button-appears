@@ -1,21 +1,22 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
-
-name: Node.js CI
+name: Test, build and deploy
 
 on:
   push:
-    branches: [ master ]
+    branches:
+    - master
+    - stable
+    - deploy-non-serverless
   pull_request:
-    branches: [ master ]
+    branches:
+    - master
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x]
+        node-version: [12.x, 14.x, 16.x]
 
     steps:
     - uses: actions/checkout@v2
@@ -28,3 +29,44 @@ jobs:
     - run: npm test
       env:
         CI: true
+
+  build:
+    needs: [test]
+    if: success() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/stable' || github.ref == 'refs/heads/deploy-non-serverless')
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Determine new tag to push to
+      run: |
+        if [[ ${{ github.ref == 'refs/heads/master' }} ]]; then
+          echo "wildbutton_tag=staging" >> $GITHUB_ENV
+        elif [[ ${{ github.ref == 'refs/heads/stable' }} ]]; then
+          echo "wildbutton_tag=latest" >> $GITHUB_ENV
+        else
+          echo "wildbutton_tag=deploy-non-serverless" >> $GITHUB_ENV
+        fi
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        platforms: linux/amd64
+        push: true
+        tags: |
+          ghcr.io/zozs/wildbutton:${{ env.wildbutton_tag }}
+
+  deploy:
+    needs: [build]
+    if: success() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/stable' || github.ref == 'refs/heads/deploy-non-serverless')
+    runs-on: ubuntu-latest
+    steps:
+    - name: Say hi
+      run: echo hi there

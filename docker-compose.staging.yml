@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  wildbutton-staging:
+    image: ghcr.io/zozs/wildbutton:staging
+    environment:
+      PORT: 9860
+    env_file:
+      - .env.staging
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.whoami.entrypoints=websecure"
+      - "traefik.http.routers.whoami.tls.certresolver=myresolver"
