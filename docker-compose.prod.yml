@@ -10,9 +10,9 @@ services:
     restart: always
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.whoami.entrypoints=websecure"
-      - "traefik.http.routers.whoami.tls.certresolver=myresolver"
+      - "traefik.http.routers.wildbutton-production.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.wildbutton-production.entrypoints=websecure"
+      - "traefik.http.routers.wildbutton-production.tls.certresolver=myresolver"
       - "traefik.http.services.wildbutton-production.loadbalancer.server.port=9850"
     logging:
       driver: "json-file"
