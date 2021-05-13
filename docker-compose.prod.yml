@@ -7,9 +7,15 @@ services:
       PORT: 9850
     env_file:
       - .env.production
+    restart: always
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.whoami.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.whoami.entrypoints=websecure"
       - "traefik.http.routers.whoami.tls.certresolver=myresolver"
       - "traefik.http.services.wildbutton-production.loadbalancer.server.port=9850"
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "10m"
