@@ -47,13 +47,11 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Determine new tag to push to
       run: |
-        if [[ ${{ github.ref == 'refs/heads/master' }} ]]; then
-          echo "wildbutton_tag=staging" >> $GITHUB_ENV
-        elif [[ ${{ github.ref == 'refs/heads/stable' }} ]]; then
-          echo "wildbutton_tag=latest" >> $GITHUB_ENV
-        else
-          echo "wildbutton_tag=deploy-non-serverless" >> $GITHUB_ENV
-        fi
+        case "${{ github.ref }}" in
+          refs/heads/master ) echo "wildbutton_tag=staging" >> $GITHUB_ENV ;;
+          refs/heads/stable ) echo "wildbutton_tag=latest" >> $GITHUB_ENV ;;
+          *                 ) echo "wildbutton_tag=deploy-non-serverless" >> $GITHUB_ENV ;;
+        esac
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
@@ -63,10 +61,54 @@ jobs:
         tags: |
           ghcr.io/zozs/wildbutton:${{ env.wildbutton_tag }}
 
-  deploy:
+  deploy-staging:
     needs: [build]
-    if: success() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/stable' || github.ref == 'refs/heads/deploy-non-serverless')
+    if: success() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/deploy-non-serverless')
+    environment: staging
     runs-on: ubuntu-latest
     steps:
-    - name: Say hi
-      run: echo hi there
+    - name: Deploying wildbutton
+      uses: appleboy/ssh-action@master
+      env:
+        SHA: ${{ github.sha }}
+      with:
+        host: ${{ secrets.DEPLOY_SSH_HOST }}
+        username: ${{ secrets.DEPLOY_SSH_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        fingerprint: ${{ secrets.DEPLOY_SSH_FINGERPRINT }}
+        script_stop: true
+        envs: SHA
+        script: |
+          whoami
+          (cd wildbutton || git clone https://github.com/zozs/a-wild-button-appears)
+          cd wildbutton
+          git fetch
+          git reset --hard $SHA
+          docker-compose -f docker-compose.traefik.yml -f "docker-compose.staging.yml" pull
+          docker-compose -f docker-compose.traefik.yml -f "docker-compose.staging.yml" up -d
+
+  deploy-production:
+    needs: [build]
+    if: success() && github.ref == 'refs/heads/stable'
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploying wildbutton
+      uses: appleboy/ssh-action@master
+      env:
+        SHA: ${{ github.sha }}
+      with:
+        host: ${{ secrets.DEPLOY_SSH_HOST }}
+        username: ${{ secrets.DEPLOY_SSH_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        fingerprint: ${{ secrets.DEPLOY_SSH_FINGERPRINT }}
+        script_stop: true
+        envs: SHA
+        script: |
+          whoami
+          (cd wildbutton || git clone https://github.com/zozs/a-wild-button-appears)
+          cd wildbutton
+          git fetch
+          git reset --hard $SHA
+          docker-compose -f docker-compose.traefik.yml -f "docker-compose.prod.yml" pull
+          docker-compose -f docker-compose.traefik.yml -f "docker-compose.prod.yml" up -d
