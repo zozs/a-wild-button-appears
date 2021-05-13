@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+  wildbutton-staging:
+    image: ghcr.io/zozs/wildbutton:staging
+    environment:
+      PORT: 9860
+    env_file:
+      - .env.staging
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.whoami.entrypoints=websecure"
+      - "traefik.http.routers.whoami.tls.certresolver=myresolver"
+      - "traefik.http.services.wildbutton-staging.loadbalancer.server.port=9860"
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "10m"

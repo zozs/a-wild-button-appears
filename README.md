@@ -20,11 +20,13 @@ Install the bot, and then proceed by waiting for a wild BUTTON to appear.
 
 ### Installation
 
-#### Install with my deployed instance
+#### Install with a cloud-hosted instance
 
 <a href="https://slack.com/oauth/v2/authorize?client_id=398308658001.1314237615088&scope=commands,channels:read,chat:write,groups:read,im:write,channels:join,chat:write.public&user_scope="><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
 
 After installation, you will receive a message by DM in your Slack client. You can then go to the Home tab of wildbutton, where you can configure settings. You need to at least select the proper channel to post buttons to :slightly_smiling_face:
+
+The cloud-hosted service is free to use, and kindly sponsored by [Debricked](https://debricked.com/).
 
 #### Deploy own instance
 
@@ -73,7 +75,7 @@ A wild BUTTON appears is licensed under GNU AGPL v3 or later, see the `LICENSE` 
 
 ```
 a-wild-button-appears - a slack bot for posting random buttons
-Copyright (c) 2018, 2019, 2020, Linus Karlsson
+Copyright (c) 2018, 2019, 2020, 2021, Linus Karlsson
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as

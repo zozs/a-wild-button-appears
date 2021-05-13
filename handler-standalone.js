@@ -14,7 +14,7 @@ function initSchedule () {
       console.error(`Failed to perform hourly check, got error: ${e} in JSON: ${JSON.stringify(e)}`)
     }
   }
-  schedule.scheduleJob({ second: 1 }, wrapHourlyCheck)
+  schedule.scheduleJob('*/10 * * * *', wrapHourlyCheck)
 }
 
 initSchedule()

@@ -1,21 +1,22 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
-
-name: Node.js CI
+name: Test, build and deploy
 
 on:
   push:
-    branches: [ master ]
+    branches:
+    - master
+    - stable
+    - deploy-non-serverless
   pull_request:
-    branches: [ master ]
+    branches:
+    - master
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x]
+        node-version: [12.x, 14.x, 16.x]
 
     steps:
     - uses: actions/checkout@v2
@@ -28,3 +29,90 @@ jobs:
     - run: npm test
       env:
         CI: true
+
+  build:
+    needs: [test]
+    if: success() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/stable' || github.ref == 'refs/heads/deploy-non-serverless')
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Determine new tag to push to
+      run: |
+        case "${{ github.ref }}" in
+          refs/heads/master ) echo "wildbutton_tag=staging" >> $GITHUB_ENV ;;
+          refs/heads/stable ) echo "wildbutton_tag=latest" >> $GITHUB_ENV ;;
+          *                 ) echo "wildbutton_tag=staging" >> $GITHUB_ENV ;;
+        esac
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        platforms: linux/amd64
+        push: true
+        tags: |
+          ghcr.io/zozs/wildbutton:${{ env.wildbutton_tag }}
+
+  deploy-staging:
+    needs: [build]
+    if: success() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/deploy-non-serverless')
+    environment: staging
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploying wildbutton
+      uses: appleboy/ssh-action@master
+      env:
+        SHA: ${{ github.sha }}
+        DOMAIN: ${{ secrets.DOMAIN }}
+        LETSENCRYPT_EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
+      with:
+        host: ${{ secrets.DEPLOY_SSH_HOST }}
+        username: ${{ secrets.DEPLOY_SSH_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        fingerprint: ${{ secrets.DEPLOY_SSH_FINGERPRINT }}
+        script_stop: true
+        envs: SHA,DOMAIN,LETSENCRYPT_EMAIL
+        script: |
+          whoami
+          (cd wildbutton || git clone https://github.com/zozs/a-wild-button-appears)
+          cd wildbutton
+          git fetch
+          git reset --hard $SHA
+          DOMAIN="$DOMAIN" LETSENCRYPT_EMAIL="$LETSENCRYPT_EMAIL" sh ~/docker-compose-wrapper.sh -f docker-compose.traefik.yml -f "docker-compose.staging.yml" pull
+          DOMAIN="$DOMAIN" LETSENCRYPT_EMAIL="$LETSENCRYPT_EMAIL" sh ~/docker-compose-wrapper.sh -f docker-compose.traefik.yml -f "docker-compose.staging.yml" up -d
+
+  deploy-production:
+    needs: [build]
+    if: success() && github.ref == 'refs/heads/stable'
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploying wildbutton
+      uses: appleboy/ssh-action@master
+      env:
+        SHA: ${{ github.sha }}
+        DOMAIN: ${{ secrets.DOMAIN }}
+        LETSENCRYPT_EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
+      with:
+        host: ${{ secrets.DEPLOY_SSH_HOST }}
+        username: ${{ secrets.DEPLOY_SSH_USER }}
+        key: ${{ secrets.DEPLOY_SSH_KEY }}
+        fingerprint: ${{ secrets.DEPLOY_SSH_FINGERPRINT }}
+        script_stop: true
+        envs: SHA,DOMAIN,LETSENCRYPT_EMAIL
+        script: |
+          whoami
+          (cd wildbutton || git clone https://github.com/zozs/a-wild-button-appears)
+          cd wildbutton
+          git fetch
+          git reset --hard $SHA
+          DOMAIN="$DOMAIN" LETSENCRYPT_EMAIL="$LETSENCRYPT_EMAIL" sh ~/docker-compose-wrapper.sh -f docker-compose.traefik.yml -f "docker-compose.prod.yml" pull
+          DOMAIN="$DOMAIN" LETSENCRYPT_EMAIL="$LETSENCRYPT_EMAIL" sh ~/docker-compose-wrapper.sh -f docker-compose.traefik.yml -f "docker-compose.prod.yml" up -d

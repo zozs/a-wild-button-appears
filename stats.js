@@ -4,9 +4,11 @@ const msToSec = ms => (ms / 1000).toFixed(2)
 
 module.exports = {
   async statsBlocks (instanceRef) {
-    const wins = await db.clicksPerUser(instanceRef)
-    const fastestClickTimes = await db.fastestClickTimes(instanceRef, 5)
-    const slowestClickTimes = await db.slowestClickTimes(instanceRef, 5)
+    const [wins, fastestClickTimes, slowestClickTimes] = await Promise.all([
+      db.clicksPerUser(instanceRef),
+      db.fastestClickTimes(instanceRef, 5),
+      db.slowestClickTimes(instanceRef, 5)
+    ])
 
     const headerBlock = {
       type: 'section',
