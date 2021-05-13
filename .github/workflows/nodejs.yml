@@ -50,7 +50,7 @@ jobs:
         case "${{ github.ref }}" in
           refs/heads/master ) echo "wildbutton_tag=staging" >> $GITHUB_ENV ;;
           refs/heads/stable ) echo "wildbutton_tag=latest" >> $GITHUB_ENV ;;
-          *                 ) echo "wildbutton_tag=deploy-non-serverless" >> $GITHUB_ENV ;;
+          *                 ) echo "wildbutton_tag=staging" >> $GITHUB_ENV ;;
         esac
     - name: Build and push
       uses: docker/build-push-action@v2
@@ -71,21 +71,23 @@ jobs:
       uses: appleboy/ssh-action@master
       env:
         SHA: ${{ github.sha }}
+        DOMAIN: ${{ secrets.DOMAIN }}
+        LETSENCRYPT_EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
       with:
         host: ${{ secrets.DEPLOY_SSH_HOST }}
         username: ${{ secrets.DEPLOY_SSH_USER }}
         key: ${{ secrets.DEPLOY_SSH_KEY }}
         fingerprint: ${{ secrets.DEPLOY_SSH_FINGERPRINT }}
         script_stop: true
-        envs: SHA
+        envs: SHA,DOMAIN,LETSENCRYPT_EMAIL
         script: |
           whoami
           (cd wildbutton || git clone https://github.com/zozs/a-wild-button-appears)
           cd wildbutton
           git fetch
           git reset --hard $SHA
-          docker-compose -f docker-compose.traefik.yml -f "docker-compose.staging.yml" pull
-          docker-compose -f docker-compose.traefik.yml -f "docker-compose.staging.yml" up -d
+          DOMAIN="$DOMAIN" LETSENCRYPT_EMAIL="$LETSENCRYPT_EMAIL" sh ~/docker-compose-wrapper.sh -f docker-compose.traefik.yml -f "docker-compose.staging.yml" pull
+          DOMAIN="$DOMAIN" LETSENCRYPT_EMAIL="$LETSENCRYPT_EMAIL" sh ~/docker-compose-wrapper.sh -f docker-compose.traefik.yml -f "docker-compose.staging.yml" up -d
 
   deploy-production:
     needs: [build]
@@ -97,18 +99,20 @@ jobs:
       uses: appleboy/ssh-action@master
       env:
         SHA: ${{ github.sha }}
+        DOMAIN: ${{ secrets.DOMAIN }}
+        LETSENCRYPT_EMAIL: ${{ secrets.LETSENCRYPT_EMAIL }}
       with:
         host: ${{ secrets.DEPLOY_SSH_HOST }}
         username: ${{ secrets.DEPLOY_SSH_USER }}
         key: ${{ secrets.DEPLOY_SSH_KEY }}
         fingerprint: ${{ secrets.DEPLOY_SSH_FINGERPRINT }}
         script_stop: true
-        envs: SHA
+        envs: SHA,DOMAIN,LETSENCRYPT_EMAIL
         script: |
           whoami
           (cd wildbutton || git clone https://github.com/zozs/a-wild-button-appears)
           cd wildbutton
           git fetch
           git reset --hard $SHA
-          docker-compose -f docker-compose.traefik.yml -f "docker-compose.prod.yml" pull
-          docker-compose -f docker-compose.traefik.yml -f "docker-compose.prod.yml" up -d
+          DOMAIN="$DOMAIN" LETSENCRYPT_EMAIL="$LETSENCRYPT_EMAIL" sh ~/docker-compose-wrapper.sh -f docker-compose.traefik.yml -f "docker-compose.prod.yml" pull
+          DOMAIN="$DOMAIN" LETSENCRYPT_EMAIL="$LETSENCRYPT_EMAIL" sh ~/docker-compose-wrapper.sh -f docker-compose.traefik.yml -f "docker-compose.prod.yml" up -d

@@ -7,4 +7,6 @@ WORKDIR /home/node/app
 COPY package*json ./
 RUN npm ci --production
 
+COPY . .
+
 CMD ["node", "handler-standalone.js"]
