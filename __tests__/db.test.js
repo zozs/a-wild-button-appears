@@ -10,13 +10,13 @@ const testDbName = uuidv4()
 let mongoServer = null
 
 beforeAll(async () => {
-  mongoServer = new MongoMemoryServer({
+  mongoServer = await MongoMemoryServer.create({
     instance: {
       dbName: testDbName
     }
   })
 
-  const uri = await mongoServer.getUri()
+  const uri = mongoServer.getUri()
 
   Object.assign(process.env, {
     MONGO_DATABASE_NAME: testDbName,
@@ -25,6 +25,8 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
+  const { client } = await db._mongo()
+  await client.close()
   await mongoServer.stop()
 })
 
