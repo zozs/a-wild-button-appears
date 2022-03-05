@@ -96,5 +96,5 @@ module.exports = {
   }),
   async recentClickTimes () { return [] },
   async slowestClickTimes (instanceRef) { return [] },
-  async winningStreaks (instanceRef) { return [] }
+  async winningStreaks (instanceRef) { return [{ user: 'test1', streak: 3 }] }
 }

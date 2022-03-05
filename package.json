@@ -1,6 +1,6 @@
 {
   "name": "a-wild-button-appears",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A wild BUTTON appears - a useless bot for Slack.",
   "main": "wildbutton.js",
   "dependencies": {

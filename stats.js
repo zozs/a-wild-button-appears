@@ -19,12 +19,15 @@ module.exports = {
       }
     }
 
-    const countBlock = {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: '*Number of wins*\n' + wins.map(u => `${u.count} <@${u.user}>`).join('\n')
-      }
+    const winsBlock = {
+      type: 'mrkdwn',
+      text: '*Number of wins*\n' + wins.map(u => `${u.count} <@${u.user}>`).join('\n')
+    }
+
+    const streakBlock = {
+      type: 'mrkdwn',
+      text: '*Longest winning streak*\n' +
+        streaks.map(u => `${u.streak} <@${u.user}>`).join('\n')
     }
 
     const fastestBlock = {
@@ -39,18 +42,19 @@ module.exports = {
         slowestClickTimes.map(u => `${msToSec(u.time)} s <@${u.user}>`).join('\n')
     }
 
-    const streakBlock = {
-      type: 'mrkdwn',
-      text: '*Longest winning streak*\n' +
-        streaks.map(u => `${u.count}: <@${u.user}>`).join('\n')
+    const countBlock = {
+      type: 'section',
+      fields: [
+        winsBlock,
+        streakBlock
+      ]
     }
 
     const fastestSlowestBlock = {
       type: 'section',
       fields: [
         fastestBlock,
-        slowestBlock,
-        streakBlock
+        slowestBlock
       ]
     }
 

@@ -19,6 +19,11 @@ describe('stats command', () => {
 describe('stats blocks', () => {
   test('includes five wins for test1', async () => {
     const stats = await statsBlocks('T1')
-    expect(stats[1].text.text).toMatch(/5 <@test1>/)
+    expect(stats[1].fields[0].text).toMatch(/5 <@test1>/)
+  })
+
+  test('includes some streak wins', async () => {
+    const stats = await statsBlocks('T1')
+    expect(stats[1].fields[1].text).toMatch(/3 <@test1>/)
   })
 })
