@@ -496,6 +496,49 @@ module.exports = {
   },
 
   /**
+   * Returns a list sorted by the longest winning streaks (descending order).
+   */
+  async winningStreaks (instanceRef, maxCount) {
+    const collection = await instanceCollection()
+    const instance = await collection.findOne({
+      'team.id': instanceRef
+    })
+
+    const streaks = []
+    let currentWinner
+    let currentStreak
+
+    for (const button of instance.buttons) {
+      const winner = button.clicks && button.clicks[0] ? button.clicks[0].user : undefined
+      if (winner) {
+        if (currentWinner === winner) {
+          currentStreak++
+        } else {
+          if (currentWinner) {
+            streaks.push({
+              user: currentWinner,
+              streak: currentStreak
+            })
+          }
+          currentStreak = 1
+          currentWinner = winner
+        }
+      }
+    }
+
+    // Add final streak
+    if (currentWinner) {
+      streaks.push({
+        user: currentWinner,
+        streak: currentStreak
+      })
+    }
+
+    streaks.sort((a, b) => b.streak - a.streak)
+    return streaks.slice(0, maxCount)
+  },
+
+  /**
    * Exports for unit testing only. If you are not a unit test, then leave them alone, mkay?
    */
   _instanceCollection: instanceCollection,
