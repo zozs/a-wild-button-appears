@@ -4,10 +4,11 @@ const msToSec = ms => (ms / 1000).toFixed(2)
 
 module.exports = {
   async statsBlocks (instanceRef) {
-    const [wins, fastestClickTimes, slowestClickTimes] = await Promise.all([
+    const [wins, fastestClickTimes, slowestClickTimes, streaks] = await Promise.all([
       db.clicksPerUser(instanceRef),
       db.fastestClickTimes(instanceRef, 5),
-      db.slowestClickTimes(instanceRef, 5)
+      db.slowestClickTimes(instanceRef, 5),
+      db.winningStreaks(instanceRef, 5)
     ])
 
     const headerBlock = {
@@ -38,11 +39,18 @@ module.exports = {
         slowestClickTimes.map(u => `${msToSec(u.time)} s <@${u.user}>`).join('\n')
     }
 
+    const streakBlock = {
+      type: 'mrkdwn',
+      text: '*Longest winning streak*\n' +
+        streaks.map(u => `${u.count}: <@${u.user}>`).join('\n')
+    }
+
     const fastestSlowestBlock = {
       type: 'section',
       fields: [
         fastestBlock,
-        slowestBlock
+        slowestBlock,
+        streakBlock
       ]
     }
 

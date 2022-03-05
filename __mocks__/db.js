@@ -95,5 +95,6 @@ module.exports = {
     return true
   }),
   async recentClickTimes () { return [] },
-  async slowestClickTimes (instanceRef) { return [] }
+  async slowestClickTimes (instanceRef) { return [] },
+  async winningStreaks (instanceRef) { return [] }
 }
