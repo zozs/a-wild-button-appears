@@ -55,7 +55,8 @@ environmental variables in your shell, or put them in a `.env` file in the same 
  * `SLACK_REDIRECT_URI`: Publicly available url where Slack should redirect to after adding app (the endpoint ending in `/auth`)
  * `JWT_SECRET`: A random string used to secure JWT tokens used for internal communications.
  * `PORT`: Port for HTTP server to listen on, *only used in standalone mode, not in serverless*.
- * `SENTRY_DSN`: Optional DSN if you want to submit errors to Sentry. Truly optional, if not set, log only to stderr/stdout. Only works in serverless mode.
+ * `SENTRY_DSN`: Optional DSN if you want to submit errors to Sentry. Truly optional, if not set, log only to stderr/stdout.
+ * `SENTRY_ENVIRONMENT`: Optional. The environment sent to sentry. Useful if you have e.g. both staging and production.
 
 ### Running
 
@@ -75,7 +76,7 @@ A wild BUTTON appears is licensed under GNU AGPL v3 or later, see the `LICENSE` 
 
 ```
 a-wild-button-appears - a slack bot for posting random buttons
-Copyright (c) 2018, 2019, 2020, 2021, Linus Karlsson
+Copyright (c) 2018, 2019, 2020, 2021, 2022, Linus Karlsson
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as

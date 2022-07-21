@@ -32,6 +32,7 @@ module.exports = (app, asyncEventHandler) => {
   slackEvents.on('app_uninstalled', (event, body, respond) => {
     // TODO: delete all data from database here, or at least disable things
     // for example by setting announce channel to null so it doesn't try to post.
+    console.warn('App uninstalled event received, but not handled')
     respond()
   })
 }
