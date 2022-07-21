@@ -24,8 +24,10 @@ const app = express()
  *                       filled in automatically by serverless.yml
  */
 
-module.exports = (asyncEventHandler) => {
+module.exports = (asyncEventHandler, sentryInitCallback = undefined) => {
+  sentryInitCallback?.init?.(app)
   mountEvents(app, asyncEventHandler)
   mountRoutes(app, asyncEventHandler)
+  sentryInitCallback?.final?.(app)
   return app
 }
