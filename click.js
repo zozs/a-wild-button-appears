@@ -3,17 +3,28 @@ const slack = require('./slack')
 
 const { DateTime } = require('luxon')
 
-function formatTime (uuid, time) {
-  return DateTime.fromJSDate(time).diff(DateTime.fromISO(uuid), 'seconds').seconds.toFixed(2)
+function formatTime (uuid, time, precision = 2) {
+  return DateTime.fromJSDate(time).diff(DateTime.fromISO(uuid), 'seconds').seconds.toFixed(precision)
+}
+
+function formatAllClicks (uuid, clicks) {
+  // Format every timestamp with both 2 and 3 decimal digits.
+  // If any 2 decimal digits strings are equal, we use the the more exact representation instead.
+  const allFormats = clicks.map(e => [
+    e.user,
+    formatTime(uuid, e.timestamp, 2),
+    formatTime(uuid, e.timestamp, 3)
+  ])
+
+  return allFormats.map(([u, two, three], i) => allFormats.some(([_, two_, three_], j) => i !== j && two === two_) ? { u, t: three } : { u, t: two })
 }
 
 function wonMessageFormatter (uuid, clickData) {
   // TODO: add block in case this was the 100, 200, etc. button.
-  const winnerUser = clickData.clicks[0].user
-  const winnerClickTime = formatTime(uuid, clickData.clicks[0].timestamp)
+  const formatted = formatAllClicks(uuid, clickData.clicks)
 
-  const runnersUp = clickData.clicks.slice(1)
-  const runnersUpTexts = runnersUp.map(r => `<@${r.user}> (${formatTime(uuid, r.timestamp)} s)`)
+  const runnersUp = formatted.slice(1)
+  const runnersUpTexts = runnersUp.map(r => `<@${r.u}> (${r.t} s)`)
 
   const blocks = [
     {
@@ -27,7 +38,7 @@ function wonMessageFormatter (uuid, clickData) {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `:heavy_check_mark: <@${winnerUser}> won (${winnerClickTime} s)!`
+        text: `:heavy_check_mark: <@${formatted[0].u}> won (${formatted[0].t} s)!`
       }
     }
   ]
