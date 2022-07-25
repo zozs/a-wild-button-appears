@@ -85,12 +85,6 @@ async function asyncEventHandler (eventObject) {
       op: `async_${eventObject.method}`,
       name: `Async handling of ${eventObject.method}`
     })
-    try {
-      asyncEventRouter(eventObject)
-    } catch (e) {
-      Sentry.captureException(e)
-    } finally {
-      transaction.finish()
-    }
+    asyncEventRouter(eventObject).catch(Sentry.captureException).finally(() => transaction.finish())
   })
 }
