@@ -481,7 +481,7 @@ describe('database', () => {
         },
         channel: 'C3',
         scheduled: {
-          timestamp: DateTime.fromISO('2037-05-25T00:00:00.000Z').toUTC().toBSON(), // this time has definitively passed.
+          timestamp: DateTime.fromISO('2037-05-25T00:00:00.000Z').toUTC().toBSON(), // this time has definitively not passed.
           messageId: '',
           channel: 'C1'
         }
@@ -493,6 +493,19 @@ describe('database', () => {
         },
         channel: 'C4',
         scheduled: {} // no scheduled time.
+      }, {
+        ...sharedProperties,
+        team: {
+          id: 'T5',
+          name: 'Team5'
+        },
+        channel: 'C5',
+        disabled: true, // this has been marked as disabled by an admin.
+        scheduled: {
+          timestamp: DateTime.fromISO('1999-05-25T00:00:00.000Z').toUTC().toBSON(), // this time has definitively passed.
+          messageId: '',
+          channel: 'C5'
+        }
       }])
     })
 
@@ -543,6 +556,21 @@ describe('database', () => {
               name: 'Team3'
             },
             channel: 'C3'
+          })
+        ])
+      )
+    })
+
+    test('does not return instance which is disabled', async () => {
+      const instances = await db.instancesWithNoScheduledAnnounces()
+      expect(instances).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            team: {
+              id: 'T5',
+              name: 'Team5'
+            },
+            channel: 'C5'
           })
         ])
       )

@@ -212,6 +212,7 @@ module.exports = {
     const collection = await instanceCollection()
     const cursor = collection.find({
       channel: { $ne: null },
+      disabled: { $ne: true },
       $or: [
         { 'scheduled.timestamp': { $exists: false } },
         { 'scheduled.timestamp': { $lt: now } }
