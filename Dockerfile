@@ -5,7 +5,7 @@ RUN mkdir /home/node/app
 WORKDIR /home/node/app
 
 COPY package*json ./
-RUN npm ci --production
+RUN npm ci --omit=dev
 
 COPY . .
 
