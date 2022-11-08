@@ -38,7 +38,7 @@ function wonMessageFormatter (uuid, clickData) {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `:heavy_check_mark: <@${formatted[0].u}> won (${formatted[0].t} s)!`
+        text: `:white_check_mark: <@${formatted[0].u}> won (${formatted[0].t} s)!`
       }
     }
   ]
