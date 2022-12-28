@@ -5,25 +5,6 @@ const mountRoutes = require('./routes')
 
 const app = express()
 
-/*
- * Environmental variables required:
- *
- * SLACK_SIGNING_SECRET: The secret used to verify that requests come from Slack
- * SLACK_CLIENT_ID: The public client id of the app.
- * SLACK_CLIENT_SECRET: The private client secret of the app.
- * SLACK_REDIRECT_URI: URI used when returning from Oauth flow. Public URL of app.
- * PORT: Port for HTTP server to listen on
- * MONGO_URL: Mongo connection string.
- * MONGO_DATABASE_NAME: Database name for mongo.
- *
- * Environmental variables that may be required depending on deployment:
- *
- * JWT_SECRET: For AWS lambda deployments to secure asynchronous lambda invocations.
- *             Should be a random string
- * ASYNC_HANDLER_LAMBDA: Function name of lambda for e.g., click registration. Should be
- *                       filled in automatically by serverless.yml
- */
-
 module.exports = (asyncEventHandler, sentryInitCallback = undefined) => {
   sentryInitCallback?.init?.(app)
   mountEvents(app, asyncEventHandler)

@@ -53,22 +53,13 @@ environmental variables in your shell, or put them in a `.env` file in the same 
  * `SLACK_CLIENT_ID`: Client ID for Slack app.
  * `SLACK_CLIENT_SECRET`: Client secret for Slack app.
  * `SLACK_REDIRECT_URI`: Publicly available url where Slack should redirect to after adding app (the endpoint ending in `/auth`)
- * `JWT_SECRET`: A random string used to secure JWT tokens used for internal communications.
- * `PORT`: Port for HTTP server to listen on, *only used in standalone mode, not in serverless*.
+ * `PORT`: Port for HTTP server to listen on.
  * `SENTRY_DSN`: Optional DSN if you want to submit errors to Sentry. Truly optional, if not set, log only to stderr/stdout.
  * `SENTRY_ENVIRONMENT`: Optional. The environment sent to sentry. Useful if you have e.g. both staging and production.
 
 ### Running
 
-#### Standalone mode
-
 Launch the `handler-standalone.js` file with Node.
-
-#### Serverless
-
-To deploy a staging environment, use e.g. `sls deploy --stage=dev --env=staging` which will load settings from `.env.staging`.
-
-For production, use something like `sls deploy --stage=production --env=production`.
 
 ## License
 

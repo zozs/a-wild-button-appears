@@ -55,8 +55,6 @@ wildbuttonApp(asyncEventHandler, sentryInitCallback).listen(process.env.PORT, ()
   console.log(`A wild BUTTON appeared (standalone) listening on port ${process.env.PORT}`)
 })
 
-// Only used if running standalone, if serverless, a scheduled
-// event to a specific endpoint is used instead.
 function initSchedule () {
   const wrapHourlyCheck = async () => {
     const transaction = sentryHelper.startTransaction({
