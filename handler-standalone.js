@@ -1,6 +1,6 @@
 const schedule = require('node-schedule')
 const { CaptureConsole } = require('@sentry/integrations')
-const Sentry = require('@sentry/serverless')
+const Sentry = require('@sentry/node')
 const Tracing = require('@sentry/tracing')
 
 const { hourlyCheck } = require('./announces')
