@@ -65,7 +65,7 @@ function timeZoneGroups () {
   // Special case for America since it has > 100 elements. We divide it into A-M, N-Z.
 
   // We also filter out a few deprecated timezones.
-  let timeZones = Object.keys(getAllTimezones()).sort()
+  let timeZones = Object.keys(getAllTimezones({ deprecated: true })).sort()
 
   // Also skip everything that doesn't contain a / since they seem to be deprecated anyway.
   // Some continents contain only deprecated aliases. Skip them.
