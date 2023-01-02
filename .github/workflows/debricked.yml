@@ -12,11 +12,23 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    # scan here
     - uses: debricked/actions/scan@v1
       env:
         DEBRICKED_TOKEN: ${{ secrets.DEBRICKED_TOKEN }}
+    # generate sbom here
     - run: |
         JWT=$(curl -s -d refresh_token="$DEBRICKED_TOKEN" https://debricked.com/api/login_refresh | jq -r .token)
-        curl -d '{"repositoryIds":[],"vulnerabilities":true,"licenses":true}' -H "Authorization: Bearer $JWT" https://debricked.com/api/1.0/open/sbom/generate-cyclonedx-sbom
+        REPORT_UUID=$(curl -s -d '{"repositoryIds":[47591],"vulnerabilities":true,"licenses":true,"sendEmail":false}' -H "Authorization: Bearer $JWT" https://debricked.com/api/1.0/open/sbom/generate-cyclonedx-sbom | jq -r .reportUuid)
+        echo "Fetching report for UUID $REPORT_UUID"
+        
+        REPORT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://debricked.com/api/1.0/open/sbom/download-generated-cyclonedx-sbom?reportUuid=$REPORT_UUID" -H "Authorization: Bearer $JWT")
+        while [ $REPORT_STATUS -ne 202 ] ; do
+          echo "Report not done, checking again in 10 sec"
+          sleep 10
+          REPORT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://debricked.com/api/1.0/open/sbom/download-generated-cyclonedx-sbom?reportUuid=$REPORT_UUID" -H "Authorization: Bearer $JWT")
+        done
+        curl -o sbom.json -s "https://debricked.com/api/1.0/open/sbom/download-generated-cyclonedx-sbom?reportUuid=$REPORT_UUID" -H "Authorization: Bearer $JWT"
+        cat sbom.json
       env:
         DEBRICKED_TOKEN: ${{ secrets.DEBRICKED_TOKEN }}
