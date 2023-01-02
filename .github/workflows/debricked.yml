@@ -17,17 +17,24 @@ jobs:
       env:
         DEBRICKED_TOKEN: ${{ secrets.DEBRICKED_TOKEN }}
     # generate sbom here
-    - run: |
+    - name: Generate SBOM
+      run: |
         JWT=$(curl -s -d refresh_token="$DEBRICKED_TOKEN" https://debricked.com/api/login_refresh | jq -r .token)
         REPORT_UUID=$(curl -s -d '{"repositoryIds":[47591],"vulnerabilities":true,"licenses":true,"sendEmail":false}' -H "Authorization: Bearer $JWT" https://debricked.com/api/1.0/open/sbom/generate-cyclonedx-sbom | jq -r .reportUuid)
         echo "Fetching report for UUID $REPORT_UUID"
         
         REPORT_STATUS=$(curl -s -o sbom.json -w "%{http_code}" "https://debricked.com/api/1.0/open/sbom/download-generated-cyclonedx-sbom?reportUuid=$REPORT_UUID" -H "Authorization: Bearer $JWT")
-        while [ $REPORT_STATUS -eq 202 ] ; do
-          echo "Report not done, checking again in 10 sec"
+        while [[ $REPORT_STATUS -eq 200 && $(jq -r .statusCode sbom.json) != "null" ]] ; do
+          echo "Report not done, checking again in 10 sec."
           sleep 10
           REPORT_STATUS=$(curl -s -o sbom.json -w "%{http_code}" "https://debricked.com/api/1.0/open/sbom/download-generated-cyclonedx-sbom?reportUuid=$REPORT_UUID" -H "Authorization: Bearer $JWT")
         done
         jq . < sbom.json
       env:
         DEBRICKED_TOKEN: ${{ secrets.DEBRICKED_TOKEN }}
+    # Save sbom as artifact
+    - name: Save SBOM report as Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: sbom-report
+        path: sbom.json
