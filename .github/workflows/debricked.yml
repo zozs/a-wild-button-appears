@@ -1,0 +1,22 @@
+name: Vulnerability scan and SBOM generation
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  vulnerabilities-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: debricked/actions/scan@v1
+      env:
+        DEBRICKED_TOKEN: ${{ secrets.DEBRICKED_TOKEN }}
+    - run: |
+        JWT=$(curl -s -d refresh_token="$DEBRICKED_TOKEN" https://debricked.com/api/login_refresh | jq -r .token)
+        curl -d '{"repositoryIds":[],"vulnerabilities":true,"licenses":true}' -H "Authorization: Bearer $JWT" https://debricked.com/api/1.0/open/sbom/generate-cyclonedx-sbom
+      env:
+        DEBRICKED_TOKEN: ${{ secrets.DEBRICKED_TOKEN }}
