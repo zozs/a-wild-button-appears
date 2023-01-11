@@ -1,10 +1,6 @@
 name: Vulnerability scan and SBOM generation
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
   vulnerabilities-scan:
