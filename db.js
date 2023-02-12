@@ -24,24 +24,13 @@ function connectMongo () {
     }
 
     console.debug('Connecting to Mongo...')
-    MongoClient.connect(process.env.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    },
-    (err, db) => {
-      if (err) {
-        dbReference = null
-        return reject(err)
-      } else {
-        console.debug('Connected to Mongo...')
-        dbReference = {
-          client: db,
-          collectionName,
-          databaseName
-        }
-        resolve(dbReference)
-      }
-    })
+    const client = new MongoClient(process.env.MONGO_URL)
+    dbReference = {
+      client,
+      collectionName,
+      databaseName
+    }
+    resolve(dbReference)
   })
 }
 

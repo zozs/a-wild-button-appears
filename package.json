@@ -14,7 +14,7 @@
     "dotenv": "^16.0.1",
     "express": "^4.17.1",
     "luxon": "^3.0.1",
-    "mongodb": "^4.8.0",
+    "mongodb": "^5.0.1",
     "node-schedule": "^2.1.0"
   },
   "devDependencies": {
