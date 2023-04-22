@@ -35,6 +35,22 @@ function connectMongo () {
 }
 
 /**
+ * Filters out clicks older than currentTime - userSettings.[user].statsInterval.
+ * If currentTime is not set, use current time.
+ */
+function filteredClicks (instance, userRef = null, currentTime = undefined) {
+  currentTime ??= DateTime.local().toUTC()
+  const days = instance.userSettings?.[userRef]?.statsInterval ?? 0
+
+  if (!userRef || days === 0) {
+    return instance.buttons
+  }
+
+  return instance.buttons
+    .filter(e => currentTime.diff(DateTime.fromISO(e.uuid).toUTC(), 'days').as('days') <= days)
+}
+
+/**
  * Instance schema:
  *
  *  accessToken = '',
@@ -48,6 +64,11 @@ function connectMongo () {
  *  intervalStart = 32400, // 09:00
  *  intervalEnd = 57600, // 16:00
  *  timezone = 'Europe/Copenhagen',
+ *  userSettings = {
+ *    'U12341234': {
+ *      statsInterval: 365, // Show stats for last 365 days, if 0 show all stats. Default 0.
+ *    },
+ *  },
  *  scope = '',
  *  botUserId = '',
  *  appId = '',
@@ -105,8 +126,10 @@ module.exports = {
 
   /**
    * Returns a list sorted by the number of times a user has won.
+   * If userRef is given, it fetches user settings to do filtering based on select stats interval setting.
+   * If _currentTime is given, use that time instead of current date. Only meant for tests.
    */
-  async clicksPerUser (instanceRef) {
+  async clicksPerUser (instanceRef, userRef = null, _currentTime = undefined) {
     // We now that the database already have clicks in sorted order, so we can just grab the first
     // click for each button to get the winner.
     const collection = await instanceCollection()
@@ -114,7 +137,7 @@ module.exports = {
       'team.id': instanceRef
     })
 
-    const winningClicks = instance.buttons
+    const winningClicks = filteredClicks(instance, userRef, _currentTime)
       .map(e => e.clicks ? e.clicks[0] : undefined)
       .filter(e => e !== undefined)
       .map(e => e.user)
@@ -402,6 +425,23 @@ module.exports = {
     }
   },
 
+  /**
+   * Sets a specific user setting, overwriting the old setting. Leaves other settings untouched.
+   */
+  async setUserSetting (instanceRef, userRef, name, value) {
+    const collection = await instanceCollection()
+    const result = await collection.updateOne({ 'team.id': instanceRef }, {
+      $set: {
+        [`userSettings.${userRef}.${name}`]: value
+      }
+    })
+
+    if (result.matchedCount !== 1) {
+      console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
+      throw new Error(`Failed to set user setting, nothing were matched in query! instanceRef: ${instanceRef}`)
+    }
+  },
+
   async setWeekdays (instanceRef, weekdays) {
     const collection = await instanceCollection()
     const result = await collection.updateOne({ 'team.id': instanceRef }, {
@@ -483,6 +523,18 @@ module.exports = {
       console.error(`result: ${result} as JSON: ${JSON.stringify(result)}`)
       throw new Error(`Failed to stored scheduled, nothing were matched in query! instanceRef: ${instanceRef}`)
     }
+  },
+
+  /**
+   * Returns a object with user settings.
+   */
+  async userSettings (instanceRef, userRef) {
+    const collection = await instanceCollection()
+    const instance = await collection.findOne({
+      'team.id': instanceRef
+    })
+
+    return instance.userSettings?.[userRef] ?? {}
   },
 
   /**

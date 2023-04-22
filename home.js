@@ -248,7 +248,7 @@ module.exports = {
   async publishHome ({ instanceRef, user }) {
     // Get current settings and stats.
     const instance = await db.instance(instanceRef)
-    const stats = await statsBlocks(instanceRef)
+    const stats = await statsBlocks(instanceRef, user)
 
     // Check if user is admin.
     const isAdmin = instance.authedUser.id === user

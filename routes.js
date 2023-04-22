@@ -43,6 +43,7 @@ module.exports = (app, asyncEventHandler) => {
     try {
       const payload = JSON.parse(req.body.payload)
       const instanceRef = payload.team.id
+      const userRef = payload.user.id
 
       if (payload.type === 'block_actions') {
         for (const action of payload.actions) {
@@ -61,6 +62,9 @@ module.exports = (app, asyncEventHandler) => {
               break
             case 'admin_endtime':
               await settings.setEndTime(res, instanceRef, action, asyncEventHandler)
+              break
+            case 'user_stats_interval':
+              await settings.setUserSetting(res, instanceRef, action, userRef, 'statsInterval')
               break
             case 'wild_button':
               await clickCommand(res, payload, asyncEventHandler)

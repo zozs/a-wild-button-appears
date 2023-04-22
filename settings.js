@@ -47,6 +47,12 @@ module.exports = {
     res.send('')
   },
 
+  async setUserSetting (res, instanceRef, action, userRef, name) {
+    const value = parseInt(action.selected_option.value)
+    await db.setUserSetting(instanceRef, userRef, name, value)
+    res.send('')
+  },
+
   async setWeekdays (res, instanceRef, action, asyncEventHandler) {
     const selectedWeekdays = action.selected_options.map(e => parseInt(e.value))
     const weekdayMask = weekdaysToMask(selectedWeekdays)
