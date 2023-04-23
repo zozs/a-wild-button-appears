@@ -156,13 +156,13 @@ module.exports = {
   /**
    * Returns a list sorted by the shortest winning click times (ascending order).
    */
-  async fastestClickTimes (instanceRef, maxCount) {
+  async fastestClickTimes (instanceRef, maxCount, userRef = null, _currentTime = undefined) {
     const collection = await instanceCollection()
     const instance = await collection.findOne({
       'team.id': instanceRef
     })
 
-    const winningClickTimes = instance.buttons
+    const winningClickTimes = filteredClicks(instance, userRef, _currentTime)
       .map(e => e.clicks && e.clicks[0] ? [e.uuid, e.clicks[0]] : undefined)
       .filter(e => e !== undefined)
       .map(([uuid, { user, timestamp }]) => ({
@@ -473,13 +473,13 @@ module.exports = {
   /**
    * Returns a list sorted by the slowest winning click times (descending order).
    */
-  async slowestClickTimes (instanceRef, maxCount) {
+  async slowestClickTimes (instanceRef, maxCount, userRef = null, _currentTime = undefined) {
     const collection = await instanceCollection()
     const instance = await collection.findOne({
       'team.id': instanceRef
     })
 
-    const winningClickTimes = instance.buttons
+    const winningClickTimes = filteredClicks(instance, userRef, _currentTime)
       .map(e => e.clicks && e.clicks[0] ? [e.uuid, e.clicks[0]] : undefined)
       .filter(e => e !== undefined)
       .map(([uuid, { user, timestamp }]) => ({
@@ -540,7 +540,7 @@ module.exports = {
   /**
    * Returns a list sorted by the longest winning streaks (descending order).
    */
-  async winningStreaks (instanceRef, maxCount) {
+  async winningStreaks (instanceRef, maxCount, userRef = null, _currentTime = undefined) {
     const collection = await instanceCollection()
     const instance = await collection.findOne({
       'team.id': instanceRef
@@ -550,7 +550,7 @@ module.exports = {
     let currentWinner
     let currentStreak
 
-    for (const button of instance.buttons) {
+    for (const button of filteredClicks(instance, userRef, _currentTime)) {
       const winner = button.clicks && button.clicks[0] ? button.clicks[0].user : undefined
       if (winner) {
         if (currentWinner === winner) {

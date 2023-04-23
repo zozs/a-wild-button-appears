@@ -263,6 +263,9 @@ describe('database', () => {
         authedUser: {
           id: 'U9'
         },
+        userSettings: {
+          U1: { statsInterval: 7 }
+        },
         channel: 'C1',
         scheduled: {}
       }
@@ -341,6 +344,14 @@ describe('database', () => {
       expect(clicks).toEqual([
         { user: 'U12341234', time: 1000 },
         { user: 'U12341234', time: 2000 },
+        { user: 'U99991111', time: 4000 }
+      ])
+    })
+
+    test('is sorted and correct when user has limited stats', async () => {
+      const clicks = await db.fastestClickTimes('T2', 10, 'U1', DateTime.fromISO('2020-03-22T00:00:00.000Z').toUTC())
+      expect(clicks).toEqual([
+        { user: 'U12341234', time: 1000 },
         { user: 'U99991111', time: 4000 }
       ])
     })
@@ -1424,6 +1435,9 @@ describe('database', () => {
         authedUser: {
           id: 'U9'
         },
+        userSettings: {
+          U1: { statsInterval: 7 }
+        },
         channel: 'C1',
         scheduled: {}
       }
@@ -1502,6 +1516,14 @@ describe('database', () => {
       expect(clicks).toEqual([
         { user: 'U99991111', time: 4000 },
         { user: 'U12341234', time: 2000 },
+        { user: 'U12341234', time: 1000 }
+      ])
+    })
+
+    test('is sorted and correct when user has limited stats', async () => {
+      const clicks = await db.slowestClickTimes('T2', 10, 'U1', DateTime.fromISO('2020-03-22T00:00:00.000Z').toUTC())
+      expect(clicks).toEqual([
+        { user: 'U99991111', time: 4000 },
         { user: 'U12341234', time: 1000 }
       ])
     })
@@ -1785,6 +1807,9 @@ describe('database', () => {
         authedUser: {
           id: 'U9'
         },
+        userSettings: {
+          U1: { statsInterval: 7 }
+        },
         channel: 'C1',
         scheduled: {}
       }
@@ -1887,6 +1912,15 @@ describe('database', () => {
       expect(clicks).toEqual([
         { user: 'U12341234', streak: 3 },
         { user: 'U12341234', streak: 2 },
+        { user: 'U99991111', streak: 1 }
+      ])
+    })
+
+    test('is sorted and correct when stats interval is limited', async () => {
+      const clicks = await db.winningStreaks('T2', 10, 'U1', DateTime.fromISO('2020-03-22T00:00:00.000Z').toUTC())
+      expect(clicks).toEqual([
+        { user: 'U12341234', streak: 3 },
+        { user: 'U12341234', streak: 1 },
         { user: 'U99991111', streak: 1 }
       ])
     })
