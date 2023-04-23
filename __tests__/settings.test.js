@@ -206,4 +206,30 @@ describe('weekday setting', () => {
     expect(db.setWeekdays.mock.calls[0][1]).toBe(0b0000000)
     expect(res.send).toHaveBeenCalledAfter(db.setWeekdays)
   })
+
+  test('can set stats interval correctly', async () => {
+    const instanceRef = 'T1234'
+    const userRef = 'U1'
+    const action = { // the real object has the complete plain text and stuff for the whole view too.
+      type: 'static_select',
+      action_id: 'user_stats_interval',
+      selected_option: {
+        text: {
+          type: 'plain_text',
+          text: 'Forever',
+          emoji: true
+        },
+        value: '0'
+      }
+    }
+    const res = { send: jest.fn() }
+
+    await settings.setUserSetting(res, instanceRef, action, userRef, 'statsInterval')
+    expect(db.setUserSetting).toHaveBeenCalledTimes(1)
+    expect(db.setUserSetting.mock.calls[0][0]).toBe(instanceRef)
+    expect(db.setUserSetting.mock.calls[0][1]).toBe(userRef)
+    expect(db.setUserSetting.mock.calls[0][2]).toBe('statsInterval')
+    expect(db.setUserSetting.mock.calls[0][3]).toBe(0)
+    expect(res.send).toHaveBeenCalledAfter(db.setUserSetting)
+  })
 })

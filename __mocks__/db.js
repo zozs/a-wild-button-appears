@@ -87,6 +87,7 @@ module.exports = {
   setEndTime: jest.fn(async (instanceRef, timezone) => {}),
   setStartTime: jest.fn(async (instanceRef, timezone) => {}),
   setTimezone: jest.fn(async (instanceRef, timezone) => {}),
+  setUserSetting: jest.fn(async (instanceRef, userRef, name, value) => {}),
   setWeekdays: jest.fn(async (instanceRef, weekdayMask) => {}),
   scheduled: jest.fn(async (instanceRef) => {}),
   storeScheduled: jest.fn(async (instanceRef, timestamp, messageId, channel) => {}),
@@ -96,5 +97,6 @@ module.exports = {
   }),
   async recentClickTimes () { return [] },
   async slowestClickTimes (instanceRef) { return [] },
+  async userSettings (instanceRef, userRef) { return {} },
   async winningStreaks (instanceRef) { return [{ user: 'test1', streak: 3 }] }
 }

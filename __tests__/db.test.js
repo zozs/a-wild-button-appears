@@ -134,6 +134,10 @@ describe('database', () => {
         authedUser: {
           id: 'U9'
         },
+        userSettings: {
+          U1: { statsInterval: 0 },
+          U2: { statsInterval: 7 }
+        },
         channel: 'C1',
         scheduled: {}
       }
@@ -214,6 +218,30 @@ describe('database', () => {
         { user: 'U99991111', count: 1 }
       ])
     })
+
+    test('is sorted and correct no interval stats set', async () => {
+      const clicks = await db.clicksPerUser('T2', 'U0')
+      expect(clicks).toEqual([
+        { user: 'U12341234', count: 2 },
+        { user: 'U99991111', count: 1 }
+      ])
+    })
+
+    test('is sorted and correct last forever stats', async () => {
+      const clicks = await db.clicksPerUser('T2', 'U1')
+      expect(clicks).toEqual([
+        { user: 'U12341234', count: 2 },
+        { user: 'U99991111', count: 1 }
+      ])
+    })
+
+    test('is sorted and correct last 7 days stats', async () => {
+      const clicks = await db.clicksPerUser('T2', 'U2', DateTime.fromISO('2020-03-22T00:00:00.000Z').toUTC())
+      expect(clicks).toEqual([
+        { user: 'U12341234', count: 1 },
+        { user: 'U99991111', count: 1 }
+      ])
+    })
   })
 
   describe('fastestClickTimes', () => {
@@ -234,6 +262,9 @@ describe('database', () => {
         appId: 'A1',
         authedUser: {
           id: 'U9'
+        },
+        userSettings: {
+          U1: { statsInterval: 7 }
         },
         channel: 'C1',
         scheduled: {}
@@ -313,6 +344,14 @@ describe('database', () => {
       expect(clicks).toEqual([
         { user: 'U12341234', time: 1000 },
         { user: 'U12341234', time: 2000 },
+        { user: 'U99991111', time: 4000 }
+      ])
+    })
+
+    test('is sorted and correct when user has limited stats', async () => {
+      const clicks = await db.fastestClickTimes('T2', 10, 'U1', DateTime.fromISO('2020-03-22T00:00:00.000Z').toUTC())
+      expect(clicks).toEqual([
+        { user: 'U12341234', time: 1000 },
         { user: 'U99991111', time: 4000 }
       ])
     })
@@ -1396,6 +1435,9 @@ describe('database', () => {
         authedUser: {
           id: 'U9'
         },
+        userSettings: {
+          U1: { statsInterval: 7 }
+        },
         channel: 'C1',
         scheduled: {}
       }
@@ -1474,6 +1516,14 @@ describe('database', () => {
       expect(clicks).toEqual([
         { user: 'U99991111', time: 4000 },
         { user: 'U12341234', time: 2000 },
+        { user: 'U12341234', time: 1000 }
+      ])
+    })
+
+    test('is sorted and correct when user has limited stats', async () => {
+      const clicks = await db.slowestClickTimes('T2', 10, 'U1', DateTime.fromISO('2020-03-22T00:00:00.000Z').toUTC())
+      expect(clicks).toEqual([
+        { user: 'U99991111', time: 4000 },
         { user: 'U12341234', time: 1000 }
       ])
     })
@@ -1580,6 +1630,164 @@ describe('database', () => {
     })
   })
 
+  describe('userSettings', () => {
+    beforeEach(async () => {
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      // For each of these tests, initialize the db with some contents.
+      const instanceCommon = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        channel: 'C1',
+        scheduled: {}
+      }
+
+      const instance1 = {
+        ...instanceCommon,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        userSettings: {
+          U1234: {
+            statsInterval: 365
+          }
+        }
+      }
+
+      const instance2 = {
+        ...instanceCommon,
+        team: {
+          id: 'T2',
+          name: 'Team2'
+        }
+      }
+
+      await collection.insertMany([instance1, instance2])
+    })
+
+    test('is empty when no user settings exists', async () => {
+      const clicks = await db.userSettings('T2', 'U1234')
+      expect(clicks).toEqual({})
+    })
+
+    test('is empty when user does not exists', async () => {
+      const clicks = await db.userSettings('T1', 'U0000')
+      expect(clicks).toEqual({})
+    })
+
+    test('is not empty when user exists', async () => {
+      const clicks = await db.userSettings('T1', 'U1234')
+      expect(clicks).toEqual({ statsInterval: 365 })
+    })
+  })
+
+  describe('setUserSetting', () => {
+    beforeEach(async () => {
+      const collection = await db._instanceCollection()
+      await collection.deleteMany({})
+
+      // For each of these tests, initialize the db with some contents.
+      const sharedProperties = {
+        accessToken: 'xoxop-134234234',
+        manualAnnounce: false,
+        weekdays: 0,
+        intervalStart: 32400,
+        intervalEnd: 57600,
+        timezone: 'Europe/Copenhagen',
+        scope: 'chat:write',
+        botUserId: 'U8',
+        appId: 'A1',
+        authedUser: {
+          id: 'U9'
+        },
+        buttons: []
+      }
+
+      await collection.insertMany([{
+        ...sharedProperties,
+        team: {
+          id: 'T1',
+          name: 'Team1'
+        },
+        userSettings: {
+          U1: {},
+          U2: {
+            statsInterval: 1
+          }
+        },
+        channel: null,
+        scheduled: {}
+      }, {
+        ...sharedProperties,
+        team: {
+          id: 'T2',
+          name: 'Team1'
+        },
+        // missing userSettings completely
+        channel: null,
+        scheduled: {}
+      }])
+    })
+
+    test('stores setting when userSettings does not exists', async () => {
+      await db.setUserSetting('T2', 'U1337', 'statsInterval', 365)
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T2'
+      })
+
+      expect(instance.userSettings).toEqual({
+        U1337: {
+          statsInterval: 365
+        }
+      })
+    })
+
+    test('stores setting when user does not exists', async () => {
+      await db.setUserSetting('T1', 'U3', 'statsInterval', 365)
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T1'
+      })
+
+      expect(instance.userSettings).toHaveProperty('U3', { statsInterval: 365 }) // New
+      expect(instance.userSettings).toHaveProperty('U2', { statsInterval: 1 }) // old
+    })
+
+    test('stores setting when user exists but does not have setting', async () => {
+      await db.setUserSetting('T1', 'U1', 'statsInterval', 365)
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T1'
+      })
+
+      expect(instance.userSettings).toHaveProperty('U1', { statsInterval: 365 }) // New
+      expect(instance.userSettings).toHaveProperty('U2', { statsInterval: 1 }) // old
+    })
+
+    test('stores setting when user exists and has setting', async () => {
+      await db.setUserSetting('T1', 'U2', 'statsInterval', 365)
+      const collection = await db._instanceCollection()
+      const instance = await collection.findOne({
+        'team.id': 'T1'
+      })
+
+      expect(instance.userSettings).toHaveProperty('U2', { statsInterval: 365 }) // New
+    })
+  })
+
   describe('winningStreaks', () => {
     beforeEach(async () => {
       const collection = await db._instanceCollection()
@@ -1598,6 +1806,9 @@ describe('database', () => {
         appId: 'A1',
         authedUser: {
           id: 'U9'
+        },
+        userSettings: {
+          U1: { statsInterval: 7 }
         },
         channel: 'C1',
         scheduled: {}
@@ -1701,6 +1912,15 @@ describe('database', () => {
       expect(clicks).toEqual([
         { user: 'U12341234', streak: 3 },
         { user: 'U12341234', streak: 2 },
+        { user: 'U99991111', streak: 1 }
+      ])
+    })
+
+    test('is sorted and correct when stats interval is limited', async () => {
+      const clicks = await db.winningStreaks('T2', 10, 'U1', DateTime.fromISO('2020-03-22T00:00:00.000Z').toUTC())
+      expect(clicks).toEqual([
+        { user: 'U12341234', streak: 3 },
+        { user: 'U12341234', streak: 1 },
         { user: 'U99991111', streak: 1 }
       ])
     })

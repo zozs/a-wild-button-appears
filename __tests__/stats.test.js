@@ -26,4 +26,14 @@ describe('stats blocks', () => {
     const stats = await statsBlocks('T1')
     expect(stats[1].fields[1].text).toMatch(/3 <@test1>/)
   })
+
+  test('does not includes stats interval if user id is not passed', async () => {
+    const stats = await statsBlocks('T1')
+    expect(stats).toHaveLength(3)
+  })
+
+  test('includes default Forever stats interval if nothing else is set', async () => {
+    const stats = await statsBlocks('T1', 'U1234')
+    expect(stats).toHaveLength(4)
+  })
 })
