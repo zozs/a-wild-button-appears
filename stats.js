@@ -54,7 +54,7 @@ module.exports = {
             emoji: true
           },
           options: intervals.map(optionStatsInterval),
-          ...(initialStatsInterval && { initial_option: optionStatsInterval(initialStatsInterval) })
+          ...(initialStatsInterval != null && { initial_option: optionStatsInterval(initialStatsInterval) })
         }
       }
       blocks.push(statsIntervalBlock)
