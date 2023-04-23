@@ -206,7 +206,9 @@ describe('weekday setting', () => {
     expect(db.setWeekdays.mock.calls[0][1]).toBe(0b0000000)
     expect(res.send).toHaveBeenCalledAfter(db.setWeekdays)
   })
+})
 
+describe('userSetting', () => {
   test('can set stats interval correctly', async () => {
     const instanceRef = 'T1234'
     const userRef = 'U1'
@@ -224,7 +226,7 @@ describe('weekday setting', () => {
     }
     const res = { send: jest.fn() }
 
-    await settings.setUserSetting(res, instanceRef, action, userRef, 'statsInterval')
+    await settings.setUserSetting(res, instanceRef, action, userRef, 'statsInterval', asyncEventHandler)
     expect(db.setUserSetting).toHaveBeenCalledTimes(1)
     expect(db.setUserSetting.mock.calls[0][0]).toBe(instanceRef)
     expect(db.setUserSetting.mock.calls[0][1]).toBe(userRef)

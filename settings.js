@@ -47,9 +47,14 @@ module.exports = {
     res.send('')
   },
 
-  async setUserSetting (res, instanceRef, action, userRef, name) {
+  async setUserSetting (res, instanceRef, action, userRef, name, asyncEventHandler) {
     const value = parseInt(action.selected_option.value)
     await db.setUserSetting(instanceRef, userRef, name, value)
+    await asyncEventHandler({
+      method: 'home',
+      instanceRef,
+      user: userRef
+    })
     res.send('')
   },
 

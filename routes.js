@@ -64,7 +64,7 @@ module.exports = (app, asyncEventHandler) => {
               await settings.setEndTime(res, instanceRef, action, asyncEventHandler)
               break
             case 'user_stats_interval':
-              await settings.setUserSetting(res, instanceRef, action, userRef, 'statsInterval')
+              await settings.setUserSetting(res, instanceRef, action, userRef, 'statsInterval', asyncEventHandler)
               break
             case 'wild_button':
               await clickCommand(res, payload, asyncEventHandler)
