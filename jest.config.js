@@ -3,5 +3,5 @@ module.exports = {
 }
 
 process.env = Object.assign(process.env, {
-  MONGOMS_VERSION: 'v6.0-latest'
+  MONGOMS_VERSION: '7.0.2'
 })

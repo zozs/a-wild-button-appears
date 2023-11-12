@@ -356,11 +356,11 @@ module.exports = {
           buttonsVersion: 1
         }
       }, {
-        returnOriginal: false
+        returnDocument: 'after'
       })
 
-      if (result.value !== null) {
-        console.debug(`Successfully wrote ${instanceRef} version ${result.value.buttonsVersion} on try ${retries}`)
+      if (result !== null) {
+        console.debug(`Successfully wrote ${instanceRef} version ${result.buttonsVersion} on try ${retries}`)
         return first
       }
     }
