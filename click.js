@@ -44,12 +44,13 @@ function wonMessageFormatter (uuid, clickData) {
   ]
 
   if (runnersUp.length > 0) {
+    const verb = runnersUp.length === 1 ? 'was' : 'were'
     blocks.push({
       type: 'context',
       elements: [
         {
           type: 'mrkdwn',
-          text: runnersUpTexts.join(', ') + ' was close!'
+          text: runnersUpTexts.join(', ') + ` ${verb} close!`
         }
       ]
     })

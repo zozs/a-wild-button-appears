@@ -241,7 +241,7 @@ describe('click handler to', () => {
     expect(slack.sendReplacingResponse.mock.calls[1][0]).toBe(clickMockResponseUrl)
     expect(JSON.stringify(slack.sendReplacingResponse.mock.calls[1][1])).toMatch(/<@UA8RXUSPL> won \(4.113 s\)/)
     expect(JSON.stringify(slack.sendReplacingResponse.mock.calls[1][1])).toMatch(/<@otheruser> \(4.114 s\)/)
-    expect(JSON.stringify(slack.sendReplacingResponse.mock.calls[1][1])).toMatch(/<@otheruser> \(4.12 s\) was close/)
+    expect(JSON.stringify(slack.sendReplacingResponse.mock.calls[1][1])).toMatch(/<@otheruser> \(4.12 s\) were close/)
     expect(JSON.stringify(slack.sendReplacingResponse.mock.calls[1][1])).toMatch(/4\.113 s/)
     expect(JSON.stringify(slack.sendReplacingResponse.mock.calls[1][1])).toMatch(/4\.114 s/)
     expect(JSON.stringify(slack.sendReplacingResponse.mock.calls[1][1])).toMatch(/4\.12 s/)

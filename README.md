@@ -67,7 +67,7 @@ A wild BUTTON appears is licensed under GNU AGPL v3 or later, see the `LICENSE` 
 
 ```
 a-wild-button-appears - a slack bot for posting random buttons
-Copyright (c) 2018, 2019, 2020, 2021, 2022, Linus Karlsson
+Copyright (c) 2018, 2019, 2020, 2021, 2022, 2023, 2024, Linus Karlsson
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
