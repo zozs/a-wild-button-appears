@@ -1,5 +1,12 @@
 # Changelog
 
+### 3.2.0
+
+#### Other changes
+
+* Now uses Node 24.x, and no longer supports Node 16.x and Node 18.x due to EOL
+* Update dependencies
+
 ### 3.0.0
 
 #### Breaking changes
