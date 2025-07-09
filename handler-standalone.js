@@ -12,10 +12,7 @@ const wildbuttonApp = require('./wildbutton')
 
 // Create a no-op helper for when Sentry is not used.
 let sentryHelper = {
-  captureException: () => null,
-  startTransaction: (ctx) => ({
-    finish: () => null
-  })
+  startSpan: (ctx, cb) => cb()
 }
 
 const sentryInitCallback = {
@@ -30,8 +27,7 @@ const sentryInitCallback = {
         ]
       })
       sentryHelper = {
-        captureException: Sentry.captureException,
-        startTransaction: Sentry.startTransaction
+        startSpan: Sentry.startSpan
       }
       console.debug('Sentry configured')
     }
@@ -48,18 +44,16 @@ wildbuttonApp(asyncEventHandler, sentryInitCallback).listen(process.env.PORT, ()
 
 function initSchedule () {
   const wrapHourlyCheck = async () => {
-    const transaction = sentryHelper.startTransaction({
+    await sentryHelper.startSpan({
       op: 'hourly',
       name: 'Hourly check'
+    }, async () => {
+      try {
+        await hourlyCheck()
+      } catch (e) {
+        console.error(`Failed to perform hourly check, got error: ${e} in JSON: ${JSON.stringify(e)}`)
+      }
     })
-
-    try {
-      await hourlyCheck()
-    } catch (e) {
-      console.error(`Failed to perform hourly check, got error: ${e} in JSON: ${JSON.stringify(e)}`)
-    } finally {
-      transaction.finish()
-    }
   }
   schedule.scheduleJob('*/10 * * * *', wrapHourlyCheck)
 }
@@ -70,10 +64,11 @@ initSchedule()
 // to the next event loop to allow us to acknowledge Slack before doing event.
 async function asyncEventHandler (eventObject) {
   setImmediate(() => {
-    const transaction = sentryHelper.startTransaction({
+    sentryHelper.startSpan({
       op: `async_${eventObject.method}`,
       name: `Async handling of ${eventObject.method}`
+    }, () => {
+      asyncEventRouter(eventObject).catch(Sentry.captureException)
     })
-    asyncEventRouter(eventObject).catch(Sentry.captureException).finally(() => transaction.finish())
   })
 }
