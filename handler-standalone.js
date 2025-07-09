@@ -33,9 +33,6 @@ const sentryInitCallback = {
         captureException: Sentry.captureException,
         startTransaction: Sentry.startTransaction
       }
-
-      app.use(Sentry.Handlers.requestHandler())
-      app.use(Sentry.Handlers.tracingHandler())
       console.debug('Sentry configured')
     }
   },
