@@ -1,7 +1,8 @@
+const preloadedSentry = require('@sentry/node/preload')
+
 const schedule = require('node-schedule')
 const { CaptureConsole } = require('@sentry/integrations')
 const Sentry = require('@sentry/node')
-const Tracing = require('@sentry/tracing')
 
 const { hourlyCheck } = require('./announces')
 const { asyncEventRouter } = require('./async-routes')
@@ -26,12 +27,7 @@ const sentryInitCallback = {
         environment: process.env.SENTRY_ENVIRONMENT,
         tracesSampleRate: 1.0,
         integrations: [
-          new CaptureConsole(
-            { levels: ['log', 'info', 'warn', 'error', 'assert'] }
-          ),
-          new Sentry.Integrations.Http({ tracing: true }),
-          new Tracing.Integrations.Express({ app }),
-          new Tracing.Integrations.Mongo()
+          Sentry.captureConsoleIntegration(),
         ]
       })
       sentryHelper = {
@@ -47,7 +43,6 @@ const sentryInitCallback = {
 
   final (app) {
     // The error handler must be before any other error middleware and after all controllers
-    app.use(Sentry.Handlers.errorHandler())
   }
 }
 
