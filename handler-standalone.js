@@ -1,7 +1,6 @@
-const preloadedSentry = require('@sentry/node/preload')
+require('@sentry/node/preload')
 
 const schedule = require('node-schedule')
-const { CaptureConsole } = require('@sentry/integrations')
 const Sentry = require('@sentry/node')
 
 const { hourlyCheck } = require('./announces')
@@ -27,7 +26,7 @@ const sentryInitCallback = {
         environment: process.env.SENTRY_ENVIRONMENT,
         tracesSampleRate: 1.0,
         integrations: [
-          Sentry.captureConsoleIntegration(),
+          Sentry.captureConsoleIntegration()
         ]
       })
       sentryHelper = {
