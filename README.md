@@ -26,7 +26,7 @@ Install the bot, and then proceed by waiting for a wild BUTTON to appear.
 
 After installation, you will receive a message by DM in your Slack client. You can then go to the Home tab of wildbutton, where you can configure settings. You need to at least select the proper channel to post buttons to :slightly_smiling_face:
 
-The cloud-hosted service is free to use, and kindly sponsored by [Debricked](https://debricked.com/).
+The cloud-hosted service is free to use, but donations are welcome :).
 
 #### Deploy own instance
 
