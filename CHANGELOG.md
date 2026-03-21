@@ -1,5 +1,11 @@
 # Changelog
 
+### 3.2.2
+
+#### Other changes
+
+* Update dependencies
+
 ### 3.2.1
 
 #### Other changes
